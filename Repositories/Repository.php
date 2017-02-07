@@ -437,5 +437,16 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
         return $results;
     }
 
-
+    /**通过条件删除一个实体库
+     * @param array $where
+     * @return mixed
+     */
+    public function whereDelete(array $where = [])
+    {
+        //处理where
+        $this->model = $this->treatedWhere($this->model, $where);
+        $results = $this->model->delete();
+        $this->resetModel();
+        return $results;
+    }
 }
