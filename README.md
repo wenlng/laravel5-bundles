@@ -72,7 +72,6 @@ bundles
     ├── Modules/
       ├── Home/
         ├── Assets/
-        ├── Assets/
         ├── Console/
         ├── Database/
           ├── Migrations/
@@ -94,7 +93,7 @@ bundles
           ├── lang/
           ├── views/
             ├── api/
-            ├── home/
+            ├── view/
         ├── Repositories/
         ├── Middleware/
         ├── Events/
@@ -105,7 +104,7 @@ bundles
         ├── HomeModule.php
     ├── Services/
       ├── Service.php
-      ├── ....
+      ├── //....
     ├── composer.json
     ├── [Frontend|Backend|Wechat|Mobile|Api]Bundle.php
   ├── AppKernl.php

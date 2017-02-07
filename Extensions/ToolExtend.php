@@ -56,23 +56,12 @@ class ToolExtend
     public function getName($class = ''){
         if(empty($class)) $class = get_class($this);
 
+        $class = str_replace('\\', '/', $class);
         $_class = dirname($class);
         $pos = strripos($_class, '\\');
         $name = $pos ? substr($_class, $pos+1) : $_class;
 
-        /*
-        $one_pos = strripos($class, '\\');
-        if(!$one_pos){
-            $name = $class;
-        }else{
-            $_class = substr($class, 0, $one_pos);
-            $two_pos = strripos($_class, '\\');
-            if(!$two_pos){
-                $name = $_class;
-            }else{
-                $name = substr($_class, $two_pos+1);
-            }
-        }*/
+        return $this->snakeName($name);
 
         return $this->snakeName($name);
     }
