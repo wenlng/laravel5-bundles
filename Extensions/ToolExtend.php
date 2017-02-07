@@ -33,11 +33,7 @@ class ToolExtend
      * @return mixed
      */
     public function snakeName($name, $division = '_'){
-        /*$format_str = preg_replace("/([A-Z])/", "_\\1", $name);
-        $_name = trim($format_str, '_');
-        return strtolower($_name);*/
-
-        return Str::snake($name, $division);
+         return Str::snake($name, $division);
     }
 
     /**
@@ -58,7 +54,7 @@ class ToolExtend
 
         $class = str_replace('\\', '/', $class);
         $_class = dirname($class);
-        $pos = strripos($_class, '\\');
+        $pos = strripos($_class, '/');
         $name = $pos ? substr($_class, $pos+1) : $_class;
 
         return $this->snakeName($name);
