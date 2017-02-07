@@ -2,6 +2,8 @@ Laravel 5 Bundles-Modules
 ==============
 
 ### Bundles-Modules 是一个把应用分成多个包，一个包分成若干个小模块.
+使用这个Bundles系统可以抛弃自带的APP目录了，使用全新的开发目录结构
+
 
 ## 安装 Installation
 使用composer安装，把下面代码加入你的composer.json文件里：
@@ -11,7 +13,7 @@ To install through composer, simply put the following in your composer.json file
 ```json
 {
     "require": {
-        "awen/bundles": "1.0"
+        "awen/bundles": "~1.0"
     }
 }
 ```
@@ -22,8 +24,9 @@ And then run `composer install` to fetch the package.
 
 或者 or
 ```
-composer require "awen/bundles:1.0"
+composer require "awen/bundles:~1.0"
 ```
+
 
 ## 添加服务提供者 Add Service Provider
 下一步添加以下服务提供者到 `config/app.php` 文件里
@@ -36,12 +39,14 @@ Next add the following service provider in `config/app.php`.
 ),
 ```
 
+如何出现命名空间不存在，执行 composer dump-autoload
+
 下一步刷新运行包的配置文件
 
 Next publish the package's configuration file by run :
 
 ```
-php artisan vendor:publish
+php artisan vendor:publish --tag=config --force
 ```
 
 ## 配置自动加载  Autoloading
@@ -53,7 +58,6 @@ By default controllers, entities or repositories not loaded automatically. You c
 {
   "autoload": {
     "psr-4": {
-      "App\\": "app/",
       "Bundles\\": "bundles/"
     }
   }
@@ -130,7 +134,7 @@ php artisan bundle:make-module Home -b=Frontend
 4.Module也一样需要注册才能加载使用，在Frontend目录下FrontendBundle.php里的registerModules()方法注册Module
 ```
 return [
-  \Bundles\Frontend\Modules\HomeModule::class,
+  \Bundles\Frontend\Modules\Home\HomeModule::class,
 ];
 ```
 
@@ -185,6 +189,7 @@ class IndexController extends Controller{
 }
 ```
 
+
 ### 三、服务注册类文件registerClassFiles()：
 1.注册格式
 ```
@@ -228,6 +233,7 @@ return [
 ```
 ``` 注意：@pay 表示依赖注入PayClass实例，左边一个@表示是同一个实例，左右一个@表示不是同一个实例```
 
+
 5.在控制器里就可以使用了
 ```
 use Bundles\Frontend\Services\Service;
@@ -249,35 +255,60 @@ class IndexController extends Controller{
 
 ``` 其他方式获取服务：$this->getService('frontend:tool') 一样的效果```
 
+
 ### 四、控制器基类Controller：
-1.加载视图格式： 'frontend@home::view.index' //BundleName@ModuleName::view....
+1.加载视图格式： 'frontend@home::view.index' //格式BundleName@ModuleName::view....
+
 2.$this->getService('frontend:tool'),获取服务，与$this->service->getService('frontend:tool')一样，参数也一样
+
 3.$this->getBundle($bundle_name); //传入名称获取单个Bundle，不传参数表示获取所有Bundle
+
 4.$this->getModule($bundle_name,$module_name); //传入Bundle名称，获取所有Module，传入Module名称获取单个Module
+
 5.$this->getCurrentBundle() //获取当前的Bundle，注意目录结构不能随意修改
+
 6.$this->getCurrentModule() //获取当前的Module，注意目录结构不能随意修改
+
 7.$this->getUseTime() //获取当前内核处理所有Bundle的时间
+
 8.$this->getBundleParam($bundle_name) //获取当前Bundle的相关参数
+
 9.$this->hasBundle($bundle_name);   //检查Bundle是否存在
+
 10.$this->hasModule($bundle_name, $module_name);   //检查Bundle的Module是否存在
+
 11.$this->getModuleRegisterParam($bundle, $module, $name);   //获取某个Bundle里注册Module的相关参数 $name 可以是：path、name、bundle_name、parameter、routes、aliases、providers、route_middleware、groups_middleware、events、subscribes、consoles
+
 
 ### 五、Bundle可以操作的方法：
 $bundle = $this->getCurrentBundle();
+
 $bundle->getLoweName(); //获取名称
+
 $bundle->getPath(); //获取路径
+
 $bundle->getParam(); //获取参数
+
 $bundle->getModuleParam($module_name, $name); //获取Module相关参数，$name 与 $this->getModuleRegisterParam($bundle, $module, $name);的 $name 一样
+
 $bundle->getModules(); //获取所有Module
+
 $bundle->getModule($name); //检查某个Module
+
 $bundle->getServices(); //获取所有Services
+
 $bundle->hasModule($name); //检查Module是否存在
+
 
 ### 六、Module可以操作的方法：
 $module = $this->getCurrentModule();
+
 $module->getLoweName(); //获取名称
+
 $module->getPath(); //获取路径
+
 $module->getModuleKey(); //获取当前Bundle与Module结合的key
+
 $module->getRegisterParam($name); //获取Module相关参数，$name 与 $this->getModuleRegisterParam($bundle, $module, $name);的 $name 一样
 
 
