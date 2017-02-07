@@ -75,12 +75,12 @@ abstract class Service extends ToolExtend implements ServiceInterface
      * 执行实例
      *  调用： serviceClassName::serviceClassFunc
      * @param $func_name
-     * @param array $param
+     * @param $param
      * @return mixed
      * @throws ServiceException
      * @throws ServiceNotFoundException
      */
-    public function execute($func_name, array $param = [])
+    public function execute($func_name, $param = [])
     {
         $class_func = explode('.', $func_name);
         if (count($class_func) != 2) {
@@ -110,7 +110,10 @@ abstract class Service extends ToolExtend implements ServiceInterface
                 ];
                 throw new ServiceNotFoundException($err);
             }
-            return call_user_func([$this->classes[$_class], $func], $param);
+			
+			if(!empty($param))
+				return call_user_func([$this->classes[$_class], $func], $param);
+			return call_user_func([$this->classes[$_class], $func]);
         }
 
         if (!isset($this->class_files[$_class])) {
@@ -131,7 +134,10 @@ abstract class Service extends ToolExtend implements ServiceInterface
                 throw new ServiceNotFoundException($err);
             }
 
-            return call_user_func([$service, $func], $param);
+			if(!empty($param))
+				return call_user_func([$service, $func], $param);
+			
+			return call_user_func([$service, $func]);
         }
 
         return null;
