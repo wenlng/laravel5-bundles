@@ -1,0 +1,15 @@
+{
+	"name": "awen-bundle-module/%BUNDLE_LOWER_NAME%-%MODULE_LOWER_NAME%",
+	"description": "",
+	"authors": [
+		{
+			"name": "%MODULE_AUTHOR_NAME%",
+			"email": "%MODULE_AUTHOR_EMAIL%"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"%MODULE_NAMESPACE_STR%\\": ""
+		}
+	}
+}

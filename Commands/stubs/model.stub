@@ -1,0 +1,11 @@
+<?php
+
+namespace %MODEL_NAMESPACE%;
+
+use Illuminate\Database\Eloquent\Model;
+
+class %MODEL_NAME% extends Model
+{
+    protected $table = "%MODEL_LOWER_NAME%";
+    protected $primaryKey = '%MODEL_LOWER_ID%';
+}

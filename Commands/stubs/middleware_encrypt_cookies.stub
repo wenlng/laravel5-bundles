@@ -1,0 +1,16 @@
+<?php
+
+namespace %MIDDLEWARE_NAMESPACE%;
+
+use Illuminate\Cookie\Middleware\EncryptCookies as BaseEncrypter;
+
+class EncryptCookies extends BaseEncrypter
+{
+    /**
+     * 排除不加密的cookie的名称
+     * @var array
+     */
+    protected $except = [
+        //...
+    ];
+}

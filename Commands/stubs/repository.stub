@@ -1,0 +1,15 @@
+<?php
+
+namespace %REPOSITORY_NAMESPACE%;
+
+use Awen\Bundles\Repositories\Repository;
+use %MODEL_NAMESPACE%\%MODEL_NAME%;
+
+class %REPOSITORY_NAME% extends Repository
+{
+    public function model()
+    {
+        return %MODEL_NAME%::class;
+    }
+
+}

@@ -1,0 +1,18 @@
+<?php
+namespace %BUNDLE_NAMESPACE%\%SERVICE_NAMESPACE%;
+
+use Awen\Bundles\Component\ServiceKernel;
+
+class %SERVICE_NAME% extends ServiceKernel
+{
+   /**
+    * 注册服务
+    * @return array
+    */
+    static public function registerServices(){
+        return [
+            //...
+        ];
+    }
+
+}
