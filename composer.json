@@ -1,6 +1,6 @@
 {
     "name": "awen/bundles",
-    "description": "Laravel5 Bundles",
+    "description": "Laravel Bundles",
     "license": "MIT",
     "keywords": [
         "bundles",
@@ -14,7 +14,8 @@
     "authors": [
         {
             "name": "Mr Awen",
-            "email": "871024608@qq.com"
+            "email": "871024608@qq.com",
+			"QQ": "871024608"
         }
     ],
     "require": {
