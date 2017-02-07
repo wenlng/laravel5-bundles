@@ -1,0 +1,33 @@
+{
+    "name": "awen/bundles",
+    "description": "Laravel Bundles",
+    "license": "MIT",
+    "keywords": [
+        "bundles",
+        "modules",
+        "laravel",
+        "awen",
+        "liangwengao",
+        "bundle",
+        "module"
+    ],
+    "authors": [
+        {
+            "name": "Mr Awen",
+            "email": "871024608@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "laravel/framework": "5.1.*|5.2.*|5.3.*"
+    },
+    "require-dev": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "Awen\\Bundles\\": ""
+        }
+    },
+    "minimum-stability": "stable"
+}

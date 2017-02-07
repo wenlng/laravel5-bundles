@@ -1,0 +1,26 @@
+<?php
+namespace %BUNDLE_NAMESPACE%;
+
+use Awen\Bundles\Component\Bundle;
+
+class %BUNDLE_NAME% extends Bundle
+{
+    /**
+     * 注册模块入口
+     * @return array
+     */
+    public function registerModules(){
+        return [
+            //...
+        ];
+    }
+
+    /**
+     * 注册服务入口
+     * @return \stdClass
+     */
+    public function registerServices(){
+        return \%BUNDLE_NAMESPACE%\%SERVICE_NAMESPACE%\%SERVICE_NAME%::class;
+    }
+
+}

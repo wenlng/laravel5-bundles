@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * Author: liangwengao
+ * Email: 871024608@qq.com
+ * Date: 2017-01-25
+ * Time: 15:47
+ */
+
+namespace Awen\Bundles\Contracts;
+
+interface BundleInterface
+{
+    public function registerModules();
+
+    public function registerServices();
+
+    public function getName();    
+    
+}

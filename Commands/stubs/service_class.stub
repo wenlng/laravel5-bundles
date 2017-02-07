@@ -1,0 +1,19 @@
+<?php
+
+namespace %SERVICE_CLASS_NAMESPACE%;
+
+use Awen\Bundles\Component\Service;
+
+class %SERVICE_CLASS_NAME% extends Service
+{
+    /**
+     * 注册服务类，仅供服务内部使用
+     * @return array
+     */
+    public function registerClassFiles()
+    {
+        return [
+            //...
+        ];
+    }
+}

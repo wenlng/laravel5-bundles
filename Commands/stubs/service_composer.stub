@@ -1,0 +1,15 @@
+{
+	"name": "%SERVICE_VENDOR%/%BUNDLE_LOWER_NAME%-%SERVICE_LOWER_NAME%",
+	"description": "",
+	"authors": [
+		{
+			"name": "%SERVICE_AUTHOR_NAME%",
+			"email": "%SERVICE_AUTHOR_EMAIL%"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"%SERVICE_NAMESPACE_STR%\\": ""
+		}
+	}
+}

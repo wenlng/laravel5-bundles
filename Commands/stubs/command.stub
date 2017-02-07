@@ -1,0 +1,42 @@
+<?php
+
+namespace %COMMAND_NAMESPACE%;
+
+use Awen\Bundles\Component\Command;
+use Symfony\Component\Console\Input\InputArgument;
+
+class %COMMAND_NAME% extends Command
+{
+    /**
+     * 控制台命令的名称与签名
+     * @var string
+     */
+    protected $name = '%COMMAND_EXECUTE_NAME%';
+
+    /**
+     * 控制台命令描述
+     * @var string
+     */
+    protected $description = '测试命令';
+
+    /**
+     * 执行控制台命令
+     * @return mixed
+     */
+    public function fire()
+    {
+        $names = $this->argument('name');
+        dd($names);
+    }
+
+    /**
+     * 获取控制台命令参数
+     * @return array
+     */
+    protected function getArguments()
+    {
+        return array(
+            array('name', InputArgument::IS_ARRAY, 'IS_ARRAY表示name参数阵列'),
+        );
+    }
+}

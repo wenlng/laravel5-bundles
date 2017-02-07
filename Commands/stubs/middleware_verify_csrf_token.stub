@@ -1,0 +1,16 @@
+<?php
+
+namespace %MIDDLEWARE_NAMESPACE%;
+
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
+
+class VerifyCsrfToken extends BaseVerifier
+{
+    /**
+     * 排除CSRF验证的URI
+     * @var array
+     */
+    protected $except = [
+        //...
+    ];
+}

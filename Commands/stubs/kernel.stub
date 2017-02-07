@@ -1,0 +1,16 @@
+<?php
+
+use Awen\Bundles\Component\Kernel;
+
+class %KERNEL_NAME% extends Kernel
+{
+    /**
+     * 注册需要运行的Bundle
+     * @return array
+     */
+    public function registerBundles(){
+        return [
+            //...
+        ];
+    }
+}
