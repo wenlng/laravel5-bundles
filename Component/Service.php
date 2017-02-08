@@ -82,7 +82,7 @@ abstract class Service extends ToolExtend implements ServiceInterface
     public function make($class, $reset = false){
         $_class = $this->snakeName($class);
 
-        if (isset($this->classes[$_class]) && $reset) {
+        if (isset($this->classes[$_class]) && !$reset) {
             return $this->classes[$_class];
         }
 
