@@ -71,6 +71,39 @@ abstract class Service extends ToolExtend implements ServiceInterface
         $this->app_kernel = $bootstrap->isBootKernel() ? $bootstrap->getKernel() : null;
     }
 
+	/**
+     * 创建一个类
+     * @param $class
+     * @param bool $reset
+     * @return mixed
+     * @throws ServiceException
+     * @throws ServiceNotFoundException
+     */
+    public function make($class, $reset = false){
+        $_class = $this->snakeName($class);
+
+        if (isset($this->classes[$_class]) && $reset) {
+            return $this->classes[$_class];
+        }
+
+        if (!isset($this->class_files[$_class])) {
+            $err = [
+                'en' => "[{$class}] Class for this service does not exist!",
+                'zh' => "[{$class}] 此服务类不存在!"
+            ];
+            throw new ServiceNotFoundException($err);
+        }
+
+        $service = $this->makeClass($this->class_files[$_class], $class);
+        if (!is_null($service)) return $service;
+
+        $err = [
+            'en' => "[{$class}] Failed to perform service class!",
+            'zh' => "[{$class}] 执行服务类失败!"
+        ];
+        throw new ServiceException($err);
+    }
+	
     /**
      * 执行实例
      *  调用： serviceClassName::serviceClassFunc
@@ -140,7 +173,11 @@ abstract class Service extends ToolExtend implements ServiceInterface
 			return call_user_func([$service, $func]);
         }
 
-        return null;
+		$err = [
+            'en' => "[{$class}] Failed to perform service class!",
+            'zh' => "[{$class}] 执行服务类失败!"
+        ];
+        throw new ServiceException($err);
     }
 
     /**
