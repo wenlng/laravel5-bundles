@@ -205,6 +205,7 @@ class IndexController extends Controller{
 %name% 表示在config.php里的name变量参数
 @name  表示已存在的服务类名字，需要注入一个类，《单例》
 @name@ 表示已存在的服务类名字，需要注入一个类，《不单例》
+[param] 表示获取所有config.php参数
 name   表示普通字符串参数
 ```
 3.拿上面的Tool服务再加一个类做实践，在Tool目录下新建一个StrClass类test方法：
@@ -250,12 +251,18 @@ class IndexController extends Controller{
     $tool_service = $this->service->getService('frontend:tool');
     //执行服务里的类方法
     $tool_service->execute('str.test');
+
+    或者：
+    $tool_service_str = $this->service->getService('frontend:tool')->make('str');
+    $tool_service_str->test();
   }
 }
 ```
 ``` 注意：getService('frontend:tool') 有第二个参数，默认是false，表示无论获取多少次这个服务都是同一个实例，如果第二个参数为true时，第二次后获取的不是同一个服务实例，是一个新的服务实例```
 
-``` 其他方式获取服务：$this->getService('frontend:tool') 一样的效果```
+``` 当$this->getService('frontend:tool',true) 第二个参数为true时表示获取新的服务对象```
+
+``` 与继承基类controller 的 $this->getService('frontend:tool') 一样的效果```
 
 
 ### 四、控制器基类Controller：
