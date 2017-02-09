@@ -209,6 +209,7 @@ abstract class Module extends ToolExtend implements ModuleInterface
      */
     protected function registerMiddleware(){
         $middleware = $this->registerMiddlewareFiles();
+        $kernel = $this->app['Illuminate\Contracts\Http\Kernel'];
 
         foreach ($this->getArrDefault($middleware['route'],[]) as $name => $class) {
             $this->router->middleware($name, $class);
@@ -218,10 +219,14 @@ abstract class Module extends ToolExtend implements ModuleInterface
         foreach ($this->getArrDefault($middleware['groups'], []) as $name => $class) {
             if (is_array($class)){
                 foreach ($class as $sub_class){
+                    if(class_exists($sub_class)) $kernel->pushMiddleware($sub_class);
+
                     $this->router->pushMiddlewareToGroup($name, $sub_class);
                     $this->groups_middleware[$name][] = $sub_class;
                 }
             }else{
+                if(class_exists($class)) $kernel->pushMiddleware($class);
+
                 $this->router->pushMiddlewareToGroup($name, $class);
                 $this->groups_middleware[$name] = $class;
             }

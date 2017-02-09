@@ -13,7 +13,7 @@ To install through composer, simply put the following in your composer.json file
 ```json
 {
     "require": {
-        "awen/bundles": "~1.0"
+        "awen/bundles": "~1.1.0"
     }
 }
 ```
@@ -24,7 +24,7 @@ And then run `composer install` to fetch the package.
 
 或者 or
 ```
-composer require "awen/bundles:~1.0"
+composer require "awen/bundles:~1.1.0"
 ```
 
 
