@@ -216,18 +216,24 @@ abstract class Module extends ToolExtend implements ModuleInterface
             $this->route_middleware[$name] = $class;
         }
 
-        foreach ($this->getArrDefault($middleware['groups'], []) as $name => $class) {
-            if (is_array($class)){
-                foreach ($class as $sub_class){
-                    if(class_exists($sub_class)) $kernel->pushMiddleware($sub_class);
+        foreach ($this->getArrDefault($middleware['groups'], []) as $name => $class)
+		{
+            if('web' == $name || 'api' == $name){
+                if (is_array($class)){
+                    foreach ($class as $sub_class){
+                        $kernel->pushMiddleware($sub_class);
 
-                    $this->router->pushMiddlewareToGroup($name, $sub_class);
-                    $this->groups_middleware[$name][] = $sub_class;
+                        $this->router->pushMiddlewareToGroup($name, $sub_class);
+                        $this->groups_middleware[$name][] = $sub_class;
+                    }
+                }else{
+                    $kernel->pushMiddleware($class);
+
+                    $this->router->pushMiddlewareToGroup($name, $class);
+                    $this->groups_middleware[$name] = $class;
                 }
             }else{
-                if(class_exists($class)) $kernel->pushMiddleware($class);
-
-                $this->router->pushMiddlewareToGroup($name, $class);
+                $this->router->middlewareGroup($name, $class);
                 $this->groups_middleware[$name] = $class;
             }
         }

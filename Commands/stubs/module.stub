@@ -50,7 +50,7 @@ class %MODULE_NAME% extends Module
                     //...
                 ],
                 'api' =>[
-                    'home:60,1',
+                    //'%BUNDLE_LOWER_NAME%_%MODULE_LOWER_NAME%:60,1',
                 ]
                 //....
             ],
