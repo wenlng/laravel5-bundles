@@ -92,7 +92,7 @@ class BundlesServiceProvider extends ServiceProvider
 
         $this->publishes([
             $config_path => config_path('bundles.php')
-        ], 'config');
+        ], 'bundle');
     }
 
 }

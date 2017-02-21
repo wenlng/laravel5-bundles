@@ -47,7 +47,7 @@ Next add the following service provider in `config/app.php`.
 Next publish the package's configuration file by run :
 
 ```
-php artisan vendor:publish --tag=config --force
+php artisan vendor:publish --tag=bundle
 ```
 
 ## 配置自动加载  Autoloading
