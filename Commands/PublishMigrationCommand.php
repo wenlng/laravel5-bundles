@@ -34,7 +34,6 @@ class PublishMigrationCommand extends Command
     public function fire()
     {
         $bundle = $this->getTrimName($this->option('bundle'));
-        $module = $this->getTrimName($this->option('module'));
 
         (new MigrationPublisher($bundle, $module))
             ->setConsole($this)
@@ -51,7 +50,6 @@ class PublishMigrationCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

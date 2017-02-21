@@ -64,11 +64,11 @@ class RequestGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
+        $bundle_path = $this->getBundlePath();
         if (strtolower($this->cate) == 'a')
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.api_request');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.api_request');
         else
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.view_request');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.view_request');
 
         return str_replace('\\', '/', $path);
     }
@@ -89,7 +89,7 @@ class RequestGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -142,8 +142,14 @@ class RequestGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         $request = $name . $this->request_suffix;
@@ -154,7 +160,7 @@ class RequestGenerator extends Generator
 
         $this->generateFiles();
 
-        $this->console->line("Request <info>[{$request}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Request <info>[{$request}]</info> created successfully in bundle: <info>[{$bundle_name}]</info>");
     }
 
 
@@ -174,11 +180,11 @@ class RequestGenerator extends Generator
     protected function getRequestNamespaceReplacement()
     {
         if (strtolower($this->cate) == 'a')
-            $request = $this->rootConfig('modules.generator.paths.api_request');
+            $request = $this->rootConfig('generator.paths.api_request', true);
         else
-            $request = $this->rootConfig('modules.generator.paths.view_request');
+            $request = $this->rootConfig('generator.paths.view_request', true);
 
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $request);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $request);
     }
 
 }

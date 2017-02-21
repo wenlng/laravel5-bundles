@@ -97,8 +97,8 @@ class ListenerGenerator extends Generator
         if(null !== $this->path){
             return str_replace('\\', '/', $this->path);
         }else{
-            $module_path = $this->getModulePath();
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.listener');
+            $bundle_path = $this->getBundlePath();
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.listener');
             return str_replace('\\', '/', $path);
         }
     }
@@ -112,8 +112,8 @@ class ListenerGenerator extends Generator
         if(null !== $this->event_path){
             return str_replace('\\', '/', $this->event_path);
         }else{
-            $module_path = $this->getModulePath();
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.event');
+            $bundle_path = $this->getBundlePath();
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.event');
             return str_replace('\\', '/', $path);
         }
     }
@@ -134,7 +134,7 @@ class ListenerGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -216,8 +216,14 @@ class ListenerGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $event_name = $this->getEventName();
         $event = $event_name. $this->event_suffix;
@@ -239,7 +245,7 @@ class ListenerGenerator extends Generator
 
         $this->generateFiles();
 
-        $this->console->line("Listener <info>[{$listener}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Listener <info>[{$listener}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
     }
 
     /**
@@ -264,8 +270,8 @@ class ListenerGenerator extends Generator
         if(null !== $this->path){
             return str_replace('/', '\\', $this->path);
         }else{
-            $listener = $this->rootConfig('modules.generator.paths.listener');
-            return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $listener);
+            $listener = $this->rootConfig('generator.paths.listener', true);
+            return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $listener);
         }
     }
 
@@ -291,8 +297,8 @@ class ListenerGenerator extends Generator
         if(null !== $this->event_path){
             return str_replace('/', '\\', $this->event_path);
         }else{
-            $event = $this->rootConfig('modules.generator.paths.event');
-            return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $event);
+            $event = $this->rootConfig('generator.paths.event', true);
+            return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $event);
         }
     }
 

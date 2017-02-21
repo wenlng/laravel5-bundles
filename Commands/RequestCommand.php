@@ -41,7 +41,6 @@ class RequestCommand extends Command
             (new RequestGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->setCate($this->getTrimName($this->option('cate')))
                 ->generate();
             
@@ -69,7 +68,6 @@ class RequestCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['cate', 'c', InputOption::VALUE_OPTIONAL, '指定-c=a(api)还是-c=v(view)'],
         ];
     }

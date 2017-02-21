@@ -37,7 +37,6 @@ class SeedCommand extends Command
         (new SeedGenerator())
         ->setConsole($this)
         ->setBundle($this->getTrimName($this->option('bundle')))
-        ->setModule($this->getTrimName($this->option('module')))
         ->setClass($this->option('class'))
         ->generate();
     }
@@ -53,7 +52,6 @@ class SeedCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['database', 'db', InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
             ['class', 'c', InputOption::VALUE_OPTIONAL, 'The class name of the root seeder', null]
         ];

@@ -3,8 +3,8 @@
 /*
 |--------------------------------------------------------------------------
 | Api接口 路由注册
-| 路由前缀：'api/%BUNDLE_LOWER_NOT_NAME%/%MODULE_LOWER_NOT_NAME%'
-| 别名前缀：'api@%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%::'
+| 路由前缀：'api/%BUNDLE_LOWER_NOT_NAME%'
+| 别名前缀：'api@%BUNDLE_LOWER_NAME%::'
 |--------------------------------------------------------------------------
 */
 

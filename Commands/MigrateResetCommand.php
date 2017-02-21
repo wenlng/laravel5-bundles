@@ -37,7 +37,6 @@ class MigrateResetCommand extends Command
         (new MigrateResetGenerator())
         ->setConsole($this)
         ->setBundle($this->getTrimName($this->option('bundle')))
-        ->setModule($this->getTrimName($this->option('module')))
         ->reset();
     }
 
@@ -51,7 +50,6 @@ class MigrateResetCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

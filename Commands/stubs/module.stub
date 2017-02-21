@@ -52,7 +52,6 @@ class %MODULE_NAME% extends Module
                 'api' =>[
                     //'%BUNDLE_LOWER_NAME%_%MODULE_LOWER_NAME%:60,1',
                 ]
-                //....
             ],
             'route' =>[
                 //....

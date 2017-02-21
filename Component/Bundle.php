@@ -10,47 +10,51 @@
 namespace Awen\Bundles\Component;
 
 use Awen\Bundles\Contracts\BundleInterface;
-use Awen\Bundles\Contracts\ModuleInterface;
 use Awen\Bundles\Contracts\ServiceInterface;
-use Awen\Bundles\Exceptions\ModuleException;
+use Awen\Bundles\Exceptions\BundleException;
 use Awen\Bundles\Exceptions\ServiceException;
 use Awen\Bundles\Exceptions\ServiceNotFoundException;
 use Awen\Bundles\Extensions\ToolExtend;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Config\Repository;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
-use phpDocumentor\Reflection\Types\Object_;
+use Illuminate\Events\Dispatcher as Event;
+use Illuminate\Foundation\AliasLoader;
+use Illuminate\Console\Events\ArtisanStarting;
+use Illuminate\Routing\Router;
+use Illuminate\Translation\Translator;
 
 abstract class Bundle extends ToolExtend implements BundleInterface
 {
     /**
-     * 模块
-     * @var array
-     */
-    protected $modules = [];
-
-    /**
-     * 服务
-     * @var array
-     */
-    protected $services = [];
-
-    /**
-     * bundle名称
-     * @var
-     */
-    protected $name;
-
-    /**
      * @var Filesystem
      */
-    protected $filesystem;
+    private $filesystem;
 
     /**
-     * 路径
-     * @var
+     * @var Application
      */
-    protected $path;
+    private $app;
+
+    /**
+     * @var Router
+     */
+    private $router;
+
+    /**
+     * @var Event
+     */
+    private $event;
+
+    /**
+     * @var Translator
+     */
+    private $translator;
+
+    /**
+     * @var Repository
+     */
+    private $config;
 
     /**
      * 内核
@@ -59,15 +63,87 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     private $kernel;
 
     /**
-     * @var Application
+     * 服务
+     * @var array
      */
-    private $app;
+    protected $services = [];
+
+    /**
+     * 名称
+     * @var string
+     */
+    protected $name;
+
+    /**
+     * 路径
+     * @var string
+     */
+    protected $path;
+
+    /**
+     * 参数
+     * @var array
+     */
+    protected $parameter = [];
+
+    /**
+     * 路由
+     * @var array
+     */
+    protected $routes = [];
+
+    /**
+     * 别名
+     * @var array
+     */
+    protected $aliases = [];
+
+    /**
+     * 服务提供
+     * @var array
+     */
+    protected $providers = [];
+
+    /**
+     * 路由中间件
+     * @var array
+     */
+    protected $route_middleware = [];
+
+    /**
+     * 中间件组
+     * @var array
+     */
+    protected $groups_middleware = [];
+
+    /**
+     * 事件
+     * @var array
+     */
+    protected $events = [];
+
+    /**
+     * 事件组
+     * @var array
+     */
+    protected $subscribes = [];
+
+    /**
+     * 命令行
+     * @var array
+     */
+    protected $consoles = [];
+
     
     public function __construct(Application $app, Kernel $kernel, $name)
     {
         $this->app = $app;
-        $this->filesystem = $app['files'];
         $this->kernel = $kernel;
+        $this->router = $this->app['router'];
+        $this->event = $this->app['events'];
+        $this->translator = $this->app['translator'];
+        $this->filesystem = $app['files'];
+        $this->config = $app['config'];
         $this->name = $name;
         $this->path = $this->getCurrentPath();
     }
@@ -76,7 +152,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * 获取路径
      * @return mixed
      */
-    public function getLoweName()
+    public function getLowerName()
     {
         return $this->snakeName($this->name);
     }
@@ -90,43 +166,6 @@ abstract class Bundle extends ToolExtend implements BundleInterface
         return $this->path;
     }
 
-    /**
-     * 初始化模块
-     * @throws ModuleException
-     */
-    public function initializeModules(){
-        $modules = $this->getArrDefault($this->registerModules(), []);
-        foreach($modules as $module_class){
-            if(!class_exists($module_class)){
-                $err = [
-                    'en' => "[{$module_class}] This module entrance file non existent!",
-                    'zh' => "[{$module_class}] 这个 Module 入口文件不存在!"
-                ];
-                throw new ModelNotFoundException($err);
-            }
-
-            $_name = $this->getName($module_class);
-            $module = new $module_class($this->app, $this, $_name, $this->getLoweName());
-            if (!$module instanceof ModuleInterface) {
-                $err = [
-                    'en' => "[{$this->getClassName($module)}] This module entrance file must realize to 'ModuleInterface' interface!",
-                    'zh' => "[{$this->getClassName($module)}] 这个 Module 入口文件必须实现 'ModuleInterface' 接口!"
-                ];
-                throw new ModuleException($err);
-            }
-
-            if(isset($this->modules[$_name])){
-                $err = [
-                    'en' => "[{$module_class}] Attempting to register two identical names of the module!",
-                    'zh' => "[{$module_class}] 试图注册两个名称相同的 Module!"
-                ];
-                throw new ModuleException($err);
-            }
-            $module->initializeParam();
-
-            $this->modules[$_name] = $module;
-        }
-    }
 
     /**
      * 初始化服务
@@ -143,6 +182,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
             throw new ServiceNotFoundException($err);
         }
 
+        $this->app->singleton($class);
         $services = $class::registerServices();
         foreach ($services as $name => $service){
             if (!isset($service['class']) || !isset($service['config'])) {
@@ -167,12 +207,246 @@ abstract class Bundle extends ToolExtend implements BundleInterface
         }
     }
 
-     /**
-      * 获取所有模块
+
+    /**
+     * 获取参数
+     * @param null $key
+     * @param null $default
+     * @return array|mixed|null
+     */
+    public function getDefaultParam($key = null, $default = null)
+    {
+        if (is_null($key)) {
+            return $this->parameter;
+        }
+
+        if (isset($this->parameter[$key]) && !empty($this->parameter[$key])) {
+            return $this->parameter[$key];
+        }
+        return $default;
+    }
+
+    /**
+     * 设置参数
+     * @param array $params
+     */
+    final protected function setParam(array $params)
+    {
+        $this->parameter = array_merge($this->parameter, $params);
+    }
+
+    /**
+     * 初始化参数
+     */
+    public function initializeParam()
+    {
+        $this->setParam($this->registerParams());
+        $this->path = $this->getPath();
+    }
+
+    /**
+     * 注册这个模块的别名
+     */
+    protected function registerAliases()
+    {
+        $loader = AliasLoader::getInstance();
+        foreach ($this->getArrDefault($this->registerClassAliases(), []) as $aliasName => $aliasClass) {
+            if(array_key_exists($aliasName, $loader->getAliases())){
+                $err = [
+                    'en' => "[{$aliasName}] Attempting to register two identical names of the alias!",
+                    'zh' => "[{$aliasName}] 试图注册两个名称相同的别名!"
+                ];
+                throw new BundleException($err);
+            }
+            $loader->alias($aliasName, $aliasClass);
+            $this->aliases[$aliasName] = $aliasClass;
+        }
+    }
+
+    /**获取服务名
+     * @param $name
+     * @return mixed
+     */
+    private function getServiceProviderName($name){
+        $bas_name = str_replace('ServiceProvider', '', $name);
+        return strtolower($bas_name);
+    }
+
+    /**
+     * 注册这个模块的服务提供者
+     */
+    protected function registerProviders()
+    {
+        $namespace = $this->getDefaultParam('namespace', '');
+        $bundle_provider = $namespace. '\\' . $this->getDefaultParam('provider', '');
+
+        $this->app->register($bundle_provider);
+        $name = $this->getServiceProviderName($this->getNamespaceName($bundle_provider));
+        $this->providers[$name] = $bundle_provider;
+
+        foreach ($this->getArrDefault($this->registerProviderFiles(), []) as $name) {
+            $provider = $namespace. '\\' .$name;
+            $this->app->register($provider);
+            $key = $this->getServiceProviderName($this->getNamespaceName($provider));
+            $this->providers[$key] = $provider;
+        }
+    }
+
+    /**
+     * 注册这个模块的路由文件
+     */
+    protected function registerRoute()
+    {
+        foreach ($this->getArrDefault($this->registerRouteFiles(), []) as $name => $route) {
+            if(!isset($route['route_file']) || !is_file($route['route_file']) || !isset($route['route_file'])){
+                $err = [
+                    'en' => "[{$name}] There is a problem with this routing configuration, please check!",
+                    'zh' => "[{$name}] 此路由配置有问题，请检查!"
+                ];
+                throw new BundleException($err);
+            }
+
+            $this->router->group($this->getArrDefault($route['group_params'],[]), function ($router) use ($route) {
+                require $route['route_file'];
+            });
+
+            $this->routes[$name] = $route;
+        }
+    }
+
+    /**
+     * 注册中间件
+     */
+    protected function registerMiddleware(){
+        $middleware = $this->registerMiddlewareFiles();
+        foreach ($this->getArrDefault($middleware['route'],[]) as $name => $class) {
+            $this->router->middleware($name, $class);
+            $this->route_middleware[$name] = $class;
+        }
+
+        foreach ($this->getArrDefault($middleware['groups'], []) as $name => $class) {
+            if('web' == $name || 'api' == $name){
+                if (is_array($class)){
+                    foreach ($class as $sub_class){
+                        $this->router->pushMiddlewareToGroup($name, $sub_class);
+                        $this->groups_middleware[$name][] = $sub_class;
+                    }
+                }else{
+                    $this->router->pushMiddlewareToGroup($name, $class);
+                    $this->groups_middleware[$name] = $class;
+                }
+            }else{
+                $this->router->middlewareGroup($name, $class);
+                $this->groups_middleware[$name] = $class;
+            }
+        }
+    }
+
+    /**
+     * 注册中间件
+     */
+    protected function registerEvents(){
+        foreach ($this->getArrDefault($this->registerEventFiles(),[]) as $event => $listeners) {
+            foreach ($listeners as $listener) {
+                $this->event->listen($event, $listener);
+            }
+            $this->events[$event] = $listeners;
+        }
+    }
+
+    /**
+     * 注册Subscribe
+     */
+    protected function registerSubscribes(){
+        foreach ($this->getArrDefault($this->registerSubscribeFiles(),[]) as $subscriber) {
+            $this->event->subscribe($subscriber);
+            $this->subscribes[] = $subscriber;
+        }
+    }
+    /**获取命令名
+     * @param $name
+     * @return mixed
+     */
+    private function getCommandName($name){
+        $bas_name = str_replace('Command', '', $name);
+        return strtolower($bas_name);
+    }
+
+    /**
+     * 注册命令行
+     */
+    protected function registerConsoles(){
+        foreach ($this->getArrDefault($this->registerConsoleFiles(),[]) as $command) {
+            $this->event->listen(ArtisanStarting::class, function ($event) use ($command) {
+                $event->artisan->resolveCommands($command);
+
+            });
+            $name = $this->getCommandName($this->getNamespaceName($command));
+            $this->consoles[$name] = $command;
+        }
+    }
+
+    /**
+     * 注册模块相关
+     */
+    public function register()
+    {
+        $this->registerAliases();
+        $this->registerProviders();
+        $this->registerRoute();
+        $this->registerMiddleware();
+        $this->registerEvents();
+        $this->registerSubscribes();
+        $this->registerConsoles();
+    }
+
+    /**
+     * 注册模块的语言翻译
+     */
+    protected function registerTranslation()
+    {
+        $lowerName = $this->getLowerName();
+        $langPath = base_path("resources/lang/{$lowerName}");
+
+        if (is_dir($langPath)) {
+            $this->translator->addNamespace($langPath, $lowerName);
+        }
+    }
+
+    /**
+     * 引导应用程序事件
+     */
+    public function boot()
+    {
+        $this->registerTranslation();
+    }
+
+
+    /**
+     * 获取当前相关参数
+     * @param string $name
      * @return array
      */
-    public function getModules(){
-        return $this->modules;
+    public function getRegisterParam($name){
+        $public_param = [
+            'path',
+            'name',
+            'parameter',
+            'routes',
+            'aliases',
+            'providers',
+            'route_middleware',
+            'groups_middleware',
+            'events',
+            'subscribes',
+            'consoles',
+        ];
+
+        if(!property_exists($this, $name) || !in_array($name, $public_param)){
+            return [];
+        }
+
+        return $this->$name;
     }
 
     /**
@@ -180,12 +454,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * @return array
      */
     public function getEventFiles(){
-        $event_files = [];
-        foreach ($this->modules as $module){
-            $key = $this->getLoweName().'.'.$module->getLowerName();
-            $event_files[$key] = $module->getRegisterParam('events');
-        }
-        return $event_files;
+        return $this->getRegisterParam('events');
     }
 
     /**
@@ -280,44 +549,6 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     }
 
     /**
-     * 检测模块是否存在
-     * @param $name
-     * @return mixed
-     */
-    public function hasModule($name)
-    {
-        $_name = $this->snakeName($name);
-        return array_key_exists($_name, $this->modules);
-    }
-
-    /**
-     * 获取Module
-     * @param $name
-     * @return mixed|null
-     */
-    public function getModule($name){
-        $_name = $this->snakeName($name);
-        if (isset($this->modules[$_name])) {
-            return $this->modules[$_name];
-        }
-        return null;
-    }
-
-    /**
-     * 删除Module
-     * @param $name
-     * @return bool
-     */
-    public function deleteModule($name)
-    {
-        $_name = $this->snakeName($name);
-        if (isset($this->modules[$_name])) {
-            unset($this->modules[$_name]);
-        }
-        return true;
-    }
-
-    /**
      * 删除当前实体Bundle
      * @return bool
      */
@@ -337,17 +568,27 @@ abstract class Bundle extends ToolExtend implements BundleInterface
         ];
     }
 
+
     /**
-     * 获取参数
+     * 获取模块storage路径
      * @param $name
-     * @param $attr
-     * @return bool
+     * @return string|null
      */
-    public function getModuleParam($name, $attr){
-        $_name = $this->snakeName($name);
-        if (isset($this->modules[$_name])) {
-            return $this->modules[$_name]->getRegisterParam($attr);
-        }
-        return null;
+    public function getStoragePath($name = ''){
+        $storage_path = $this->config->get('bundles.paths.storage') .'/'. $this->getLowerName() .'/'.$name;
+        if(!is_dir($storage_path)) $this->filesystem->makeDirectory($storage_path, 0755, true);
+
+        return $storage_path;
+    }
+
+    /**
+     * 获取模块asset路径
+     * @param $name
+     * @return string|null
+     */
+    public function getAssetUrl($name = ''){
+        $storage_path = str_replace(public_path(), '', $this->config->get('bundles.paths.assets')) . '/' . $this->getLowerName(). '/'.  $name;
+
+        return asset(trim($storage_path, '\,/'));
     }
 }

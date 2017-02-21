@@ -41,7 +41,6 @@ class EventCommand extends Command
             (new EventGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->generate();
         }
     }
@@ -67,7 +66,6 @@ class EventCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

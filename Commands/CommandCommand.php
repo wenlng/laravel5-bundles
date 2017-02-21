@@ -41,7 +41,6 @@ class CommandCommand extends Command
             (new CommandGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->setCommandName($this->getTrimName($this->option('command')))
                 ->generate();
         }
@@ -69,7 +68,6 @@ class CommandCommand extends Command
         return [
             ['command', 'c', InputOption::VALUE_OPTIONAL, '指定命令行命名'],
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

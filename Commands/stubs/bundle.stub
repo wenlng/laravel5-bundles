@@ -2,15 +2,132 @@
 namespace %BUNDLE_NAMESPACE%;
 
 use Awen\Bundles\Component\Bundle;
+use Awen\Bundles\Exceptions\BundleException;
 
 class %BUNDLE_NAME% extends Bundle
 {
+
     /**
-     * 注册模块入口
+     * 注册路由
      * @return array
      */
-    public function registerModules(){
+    public function registerRouteFiles(){
         return [
+            'api' =>[
+                'route_file' => __DIR__ . '/%API_ROUTE_FILE%',
+                'group_params' => [
+                    'middleware' => ['web'],
+                    'domain' => '', //another kind son domain: (api.host.com)/%BUNDLE_LOWER_NOT_NAME%
+                    'prefix' => 'api/%BUNDLE_LOWER_NOT_NAME%',
+                    'as' => 'api@%BUNDLE_LOWER_NAME%::',
+                    'namespace' => '%BUNDLE_NAMESPACE%\%API_CONTROLLER_NAMESPACE%'
+                ]
+            ],
+
+            'view' =>[
+                'route_file' => __DIR__ . '/%VIEW_ROUTE_FILE%',
+                'group_params' => [
+                    'middleware' => ['web'],
+                    'domain' => '', //another kind son domain: (%BUNDLE_LOWER_NOT_NAME%.host.com)
+                    'prefix' => '%BUNDLE_LOWER_NOT_NAME%',
+                    'as' => '%BUNDLE_LOWER_NAME%::',
+                    'namespace' => '%BUNDLE_NAMESPACE%\%VIEW_CONTROLLER_NAMESPACE%'
+                ]
+            ],
+        ];
+    }
+
+
+    /**
+     * 注册中间件
+     * @return array
+     */
+    public function registerMiddlewareFiles()
+    {
+        return [
+            'groups' =>[
+                'web' => [
+                    //初始值，与app/Kernel.php一样
+                    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+                    \Illuminate\Session\Middleware\StartSession::class,
+                    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+
+                    //默认自带,cookie加密排除与Form安全验证排除
+                    \%BUNDLE_NAMESPACE%\Middleware\EncryptCookies::class,
+                    \%BUNDLE_NAMESPACE%\Middleware\VerifyCsrfToken::class,
+
+                    //开发者
+                    //...
+                ],
+                'api' =>[
+                    //'%BUNDLE_LOWER_NAME%:60,1',
+                ]
+            ],
+            'route' =>[
+                //....
+            ]
+        ];
+    }
+
+    /**
+     * 注册类别名
+     * @return array
+     */
+    public function registerClassAliases(){
+        return [
+            //... alias_name => class
+
+        ];
+    }
+
+    /**
+     * 注册事件
+     * @return array
+     */
+    public function registerEventFiles(){
+        return [
+            //...  'Event' =>['Listeners']
+        ];
+    }
+
+    /**
+     * 注册Subscribe
+     * @return array
+     */
+    public function registerSubscribeFiles(){
+        return [
+            //...
+        ];
+    }
+
+    /**
+     * 注册服务提供
+     * @return array
+     */
+    public function registerProviderFiles()
+    {
+        return [
+            //...
+        ];
+    }
+
+    /**
+     * 注册命令行
+     * @return array
+     */
+    public function registerConsoleFiles(){
+        return [
+            //...
+        ];
+    }
+
+    /**
+     * 注册自定义参数
+     * @return array
+     */
+    public function registerUserParams(){
+        return [
+            'description' => '这是[%BUNDLE_LOWER_NAME%]包',
             //...
         ];
     }
@@ -23,4 +140,25 @@ class %BUNDLE_NAME% extends Bundle
         return \%BUNDLE_NAMESPACE%\%SERVICE_NAMESPACE%\%SERVICE_NAME%::class;
     }
 
+    /**
+     * ---------------------------------------------------------
+     * |   @Note 系统自动生成Bundle固定参数，谨慎修改，小心产生Bug   |
+     * ---------------------------------------------------------
+     */
+    public function registerParams(){
+        $root_param = [
+            'name' => '%BUNDLE_STUDLY_NAME%',
+            'alias' => '%BUNDLE_LOWER_NAME%',
+            'namespace' => '%BUNDLE_NAMESPACE_STR%',
+            'provider' => 'Providers\\%BUNDLE_STUDLY_NAME%ServiceProvider'
+        ];
+
+        $param = $this->registerUserParams() ?: [];
+        foreach($param as $key => $value){
+            if(array_key_exists($key, $root_param)){
+                throw new BundleException("注册的这个参数{$key} 不能与Bundle系统固定的参数冲突：name,alias,namespace,provider");
+            }
+        }
+        return array_merge($root_param, $param);
+    }
 }

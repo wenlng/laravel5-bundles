@@ -1,6 +1,6 @@
 <?php
 
-namespace %MODULE_NAMESPACE%\%VIEW_CONTROLLER_NAMESPACE%;
+namespace %BUNDLE_NAMESPACE%\%VIEW_CONTROLLER_NAMESPACE%;
 
 use Awen\Bundles\Routing\Controller;
 
@@ -8,7 +8,7 @@ class IndexController extends Controller {
 
 	public function index()
 	{
-		return view('%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%::view.index');
+		return view('%BUNDLE_LOWER_NAME%::view.index');
 	}
 
 }

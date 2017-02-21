@@ -38,7 +38,6 @@ class SeedMakeCommand extends Command
         (new SeedMakeGenerator($this->argument('name')))
         ->setConsole($this)
         ->setBundle($this->getTrimName($this->option('bundle')))
-        ->setModule($this->getTrimName($this->option('module')))
         ->setDatabase($this->option('database'))
         ->generate();
     }
@@ -65,7 +64,6 @@ class SeedMakeCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['database', 'd', InputOption::VALUE_NONE, '是表还是数据库'],
         ];
     }

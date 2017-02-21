@@ -41,7 +41,6 @@ class JobCommand extends Command
             (new JobGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->generate();
             
         }
@@ -68,7 +67,6 @@ class JobCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

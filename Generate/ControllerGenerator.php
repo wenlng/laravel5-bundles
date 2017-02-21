@@ -22,6 +22,15 @@ class ControllerGenerator extends Generator
      */
     protected $cate = 'v';
 
+    /**
+     * @var string
+     */
+    protected $path;
+    /**
+     * @var string
+     */
+    protected $extend;
+
 
     public function __construct($name)
     {
@@ -40,6 +49,27 @@ class ControllerGenerator extends Generator
         return $this;
     }
 
+    /**
+     * 设置分类
+     * @param $path
+     * @return $this
+     */
+    public function setPathSuffix($path)
+    {
+        if (!empty($path) ) $this->path = $path;
+        return $this;
+    }
+
+    /**
+     * 设置分类
+     * @param $extend
+     * @return $this
+     */
+    public function setExtend($extend)
+    {
+        if (!empty($extend)) $this->extend = $extend;
+        return $this;
+    }
     /**
      * 转大写规范
      * @return string
@@ -64,11 +94,13 @@ class ControllerGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
+        $bundle_path = $this->getBundlePath();
         if(strtolower($this->cate) == 'a')
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.api_controller');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.api_controller');
         else
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.view_controller');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.view_controller');
+
+        if(!empty($this->path)) $path = $path. '/' . trim($this->path, '\,/');
 
         return str_replace('\\', '/', $path);
     }
@@ -89,7 +121,7 @@ class ControllerGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -99,12 +131,15 @@ class ControllerGenerator extends Generator
     public function generateFiles()
     {
         $controller_file = $this->getPath(). '/' . $this->getName() . $this->controller_suffix . '.php';
+        $key = 'controller';
         if(!$this->filesystem->exists($controller_file)){
             if (!$this->filesystem->isDirectory($dir = dirname($controller_file))) {
                 $this->filesystem->makeDirectory($dir, 0775, true);
             }
 
-            $this->filesystem->put($controller_file, $this->getStubContents('controller'));
+            if(!empty($this->extend))$key = 'extend_controller';
+
+            $this->filesystem->put($controller_file, $this->getStubContents($key));
         }
         $this->console->info("Created : {$controller_file}");
     }
@@ -127,8 +162,14 @@ class ControllerGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         $controller = $name.$this->controller_suffix;
@@ -139,7 +180,7 @@ class ControllerGenerator extends Generator
 
         $this->generateFiles();
 
-        $this->console->line("Controller <info>[{$controller}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Controller <info>[{$controller}]</info> created successfully in bundle: <info>[{$bundle_name}]</info>");
     }
 
     /**
@@ -158,11 +199,31 @@ class ControllerGenerator extends Generator
     protected function getControllerNamespaceReplacement()
     {
         if(strtolower($this->cate) == 'a')
-            $controller = $this->rootConfig('modules.generator.paths.api_controller');
+            $controller = $this->rootConfig('generator.paths.api_controller', true);
         else
-            $controller = $this->rootConfig('modules.generator.paths.view_controller');
+            $controller = $this->rootConfig('generator.paths.view_controller', true);
 
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $controller);
+        if(!empty($this->path)) $controller = $controller . '\\' . trim(Str::studly($this->path), '\,/');
+
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $controller);
     }
 
+
+    /**
+     * 获取ControllerExtend名称
+     * @return string
+     */
+    protected function getControllerExtendNameReplacement()
+    {
+        return Str::studly(class_basename($this->extend));
+    }
+
+    /**
+     * 获取ControllerExtend命名
+     * @return string
+     */
+    protected function getControllerExtendNamespaceReplacement()
+    {
+        return Str::studly(str_replace('/', '\\', $this->extend));
+    }
 }

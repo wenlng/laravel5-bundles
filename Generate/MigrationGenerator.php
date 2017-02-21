@@ -88,8 +88,8 @@ class MigrationGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.migration');
+        $module_path = $this->getBundlePath();
+        $path = $module_path . '/' . $this->rootConfig('generator.paths.migration');
         return str_replace('\\', '/', $path);
     }
 
@@ -159,13 +159,19 @@ class MigrationGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getLowerName();
         $this->generateFiles();
 
-        $this->console->line("Migration <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Migration <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
     }
 
 }

@@ -109,7 +109,7 @@ class BundlesBootstrap
     {
         if(!$this->exist_kernel) $this->initKernel($this->root_path);
         if($this->isBootKernel()){
-            foreach ($this->kernel->getModules() as $module) {
+            foreach ($this->kernel->getBundles() as $module) {
                 $module->register();
             }
         }
@@ -122,7 +122,7 @@ class BundlesBootstrap
     {
         if(!$this->exist_kernel) $this->initKernel($this->root_path);
         if($this->isBootKernel()){
-            foreach ($this->kernel->getModules() as $module) {
+            foreach ($this->kernel->getBundles() as $module) {
                 $module->boot();
             }
         }

@@ -31,7 +31,6 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected $commands = [
         'Bundle',
-        'Module',
         'Controller',
         'Command',
         'Model',

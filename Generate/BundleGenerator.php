@@ -9,6 +9,8 @@
 
 namespace Awen\Bundles\Generate;
 
+use Illuminate\Support\Str;
+
 class BundleGenerator extends Generator
 {
     public function __construct($name)
@@ -24,7 +26,7 @@ class BundleGenerator extends Generator
       */
     public function getBundleFolders()
     {
-        return array_values($this->rootConfig('bundles.generator.paths'));
+        return array_values($this->rootConfig('generator.paths'));
     }
 
 
@@ -34,7 +36,7 @@ class BundleGenerator extends Generator
      */
     public function getBundleFiles()
     {
-        return  $this->rootConfig('bundles.generator.files');
+        return  $this->rootConfig('generator.files');
     }
 
     /**
@@ -65,7 +67,7 @@ class BundleGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('bundles.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -105,6 +107,27 @@ class BundleGenerator extends Generator
             $this->filesystem->put($path, $this->getStubContents($stub));
             $this->console->info("Created : {$path}");
         }
+    }
+
+    /**
+     * 生成默认例子文件
+     */
+    public function generateDefaultFiles(){
+        $default_files = $this->rootConfig('generator.default');
+        $bundle_name = $this->getBundleName().$this->bundle_suffix;
+
+        foreach ($default_files as $stub => $file) {
+            $path = $this->getBundlePath().'/'.$this->getStubStr($stub, $file);
+            if (!$this->filesystem->isDirectory($dir = dirname($path))) {
+                $this->filesystem->makeDirectory($dir, 0775, true);
+            }
+
+            $this->filesystem->put($path, $this->getStubContents($stub));
+            $this->console->info("Created Default : {$path}");
+        }
+        $this->console->info("----------------------------------------------------------------------------");
+        $this->console->line("| Please register bundle <info>[{$this->getBundleCurrentNamespace()}\\{$bundle_name}::class]</info> to {$this->rootConfig('kernel')}.php |");
+        $this->console->info("----------------------------------------------------------------------------");
     }
 
     /**
@@ -154,8 +177,13 @@ class BundleGenerator extends Generator
         $this->generateFolders();
         $this->generateFiles();
 
+        if(!$this->clean){
+            $this->generateDefaultFiles();
+        }
+
         $this->console->line("Bundle <info>[{$name}]</info> created successfully.");
     }
+
 
 
     /**
@@ -167,13 +195,23 @@ class BundleGenerator extends Generator
         return $this->getLowerBundleName();
     }
 
+
+    /**
+     * 获取Bundle大写名
+     * @return string
+     */
+    protected function getBundleStudlyNameReplacement()
+    {
+        return $this->getBundleName();
+    }
+
     /**
      * 获取内核名称
      * @return mixed
      */
     protected function getKernelNameReplacement()
     {
-        return $this->rootConfig('kernel');
+        return $this->getKernelName();
     }
 
     /**
@@ -186,20 +224,11 @@ class BundleGenerator extends Generator
     }
 
     /**
-     * 获取骆峰式名称
-     * @return string
-     */
-    protected function getBundleStudlyNameReplacement()
-    {
-        return $this->getBundleName();
-    }
-
-    /**
      * 获取服务名称
      * @return mixed
      */
     protected function getServiceNameReplacement(){
-        return $this->rootConfig('service.name');
+        return $this->rootConfig('service.name', true);
     }
 
     /**
@@ -207,8 +236,17 @@ class BundleGenerator extends Generator
      * @return mixed
      */
     protected function getServiceNamespaceReplacement(){
-        return $this->rootConfig('service.namespace');
+        return $this->rootConfig('service.namespace', true);
     }
+
+    /**
+     * 获取Root名称
+     * @return mixed
+     */
+    protected function getRootNameReplacement(){
+        return $this->rootConfig('name');
+    }
+
 
     /**
      * 获取第三方名称
@@ -243,8 +281,7 @@ class BundleGenerator extends Generator
      */
     protected function getBundleNamespaceReplacement()
     {
-        $bas_namespace = str_replace('\\', '\\\\', $this->rootConfig('namespace'));
-        return $bas_namespace . '\\' . $this->getBundleName();
+        return $this->getBundleCurrentNamespace();
     }
 
     /**
@@ -253,8 +290,111 @@ class BundleGenerator extends Generator
      */
     protected function getBundleNamespaceStrReplacement()
     {
-        $bas_namespace = str_replace('\\', '\\\\', $this->rootConfig('namespace'));
-        return $bas_namespace . '\\\\' . $this->getBundleName();
+        return str_replace('\\', '\\\\', $this->getBundleCurrentNamespace());
+    }
+
+    //---------------
+
+    /**
+     * 获取bundle小写名
+     * @return mixed
+     */
+    protected function getBundleLowerNotNameReplacement()
+    {
+        return strtolower($this->getBundleName());
+    }
+
+    /**
+     * 获取api_router文件
+     * @return mixed
+     */
+    protected function getApiRouteFileReplacement(){
+        return $this->rootConfig('generator.files.api_route');
+    }
+
+    /**
+     * 获取view_router文件
+     * @return mixed
+     */
+    protected function getViewRouteFileReplacement(){
+        return $this->rootConfig('generator.files.view_route');
+    }
+
+    /**
+     * 获取api_router文件
+     * @return mixed
+     */
+    protected function getApiControllerNamespaceReplacement(){
+        return str_replace('/', '\\', $this->rootConfig('generator.paths.api_controller', true)) ;
+    }
+
+    /**
+     * 获取view_router文件
+     * @return mixed
+     */
+    protected function getViewControllerNamespaceReplacement(){
+        return str_replace('/', '\\', $this->rootConfig('generator.paths.view_controller', true));
+    }
+
+    /**
+     * 获取view_router路径
+     * @return mixed
+     */
+    protected function getViewControllerPathReplacement(){
+        return $this->rootConfig('generator.paths.view_controller');
+    }
+
+    /**
+     * 获取中间件命名
+     * @return string
+     */
+    protected function getMiddlewareNamespaceReplacement(){
+        $bundle_namespace = $this->getBundleCurrentNamespace();
+        $middleware_namespace = str_replace('/', '\\', $this->rootConfig('generator.paths.middleware', true));
+
+        return $bundle_namespace . '\\' .$middleware_namespace;
+    }
+
+    /**
+     * 获取队列命名
+     * @return string
+     */
+    protected function getJobNamespaceReplacement(){
+        $bundle_namespace = $this->getBundleCurrentNamespace();
+        $middleware_namespace = str_replace('/', '\\', $this->rootConfig('generator.paths.job', true));
+
+        return $bundle_namespace . '\\' .$middleware_namespace;
+    }
+
+    /**
+     * 获取服务提供命名
+     * @return string
+     */
+    protected function getProviderNamespaceReplacement(){
+        $bundle_namespace = $this->getBundleCurrentNamespace();
+        $provider_namespace = str_replace('/', '\\', $this->rootConfig('generator.paths.provider', true));
+
+        return $bundle_namespace . '\\' .$provider_namespace;
+    }
+
+    /**
+     * 获取Seed命名
+     * @return string
+     */
+    protected function getSeedNameReplacement(){
+        return $this->getBundleName() . 'DatabaseSeeder';
+    }
+
+    /**
+     * 获取Seed命名
+     * @return string
+     */
+    protected function getSeedNamespaceReplacement(){
+
+        $bundle_namespace = $this->getBundleCurrentNamespace();
+        $provider_namespace = str_replace('/', '\\', $this->rootConfig('generator.paths.seeder', true));
+
+        return $bundle_namespace . '\\' .$provider_namespace;
     }
 
 }

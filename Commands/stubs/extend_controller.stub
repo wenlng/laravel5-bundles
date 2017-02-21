@@ -1,0 +1,14 @@
+<?php
+
+namespace %CONTROLLER_NAMESPACE%;
+
+use %CONTROLLER_EXTEND_NAMESPACE% ;
+
+class %CONTROLLER_NAME% extends %CONTROLLER_EXTEND_NAME%{
+
+	public function index()
+	{
+		//return view();
+	}
+
+}
