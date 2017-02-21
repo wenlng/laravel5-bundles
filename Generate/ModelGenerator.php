@@ -96,8 +96,8 @@ class ModelGenerator extends Generator
      */
     public function getModelPath()
     {
-        $module_path = $this->getModulePath();
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.model');
+        $bundle_path = $this->getBundlePath();
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.model');
         return str_replace('\\', '/', $path);
     }
 
@@ -107,8 +107,8 @@ class ModelGenerator extends Generator
      */
     public function getRepositoryPath()
     {
-        $module_path = $this->getModulePath();
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.repository');
+        $bundle_path = $this->getBundlePath();
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.repository');
         return str_replace('\\', '/', $path);
     }
 
@@ -128,7 +128,7 @@ class ModelGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -223,8 +223,14 @@ class ModelGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         $repository = $name . $this->repository_suffix;
@@ -253,13 +259,13 @@ class ModelGenerator extends Generator
         $this->generateFiles();
 
         if ($this->cate == 'm') {
-            $this->console->line("Model <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+            $this->console->line("Model <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
         } else {
-            $this->console->line("Repository <info>[{$repository}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+            $this->console->line("Repository <info>[{$repository}]</info> created successfully in bundle: <info>[{$bundle_name}]</info>");
         }
 
         if ($this->all && $this->cate == 'm') {
-            $this->console->line("Repository <info>[{$repository}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+            $this->console->line("Repository <info>[{$repository}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
         }
     }
 
@@ -305,8 +311,8 @@ class ModelGenerator extends Generator
      */
     protected function getModelNamespaceReplacement()
     {
-        $model = $this->rootConfig('modules.generator.paths.model');
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $model);
+        $model = $this->rootConfig('generator.paths.model', true);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $model);
     }
 
     /**
@@ -315,7 +321,7 @@ class ModelGenerator extends Generator
      */
     protected function getRepositoryNamespaceReplacement()
     {
-        $repository = $this->rootConfig('modules.generator.paths.repository');
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $repository);
+        $repository = $this->rootConfig('generator.paths.repository', true);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $repository);
     }
 }

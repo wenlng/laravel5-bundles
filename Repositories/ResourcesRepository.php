@@ -61,17 +61,7 @@ abstract class ResourcesRepository implements ResourcesRepositoryInterface
     /**
      * @var string
      */
-    protected $module;
-
-    /**
-     * @var string
-     */
     protected $bundle_suffix = 'Bundle';
-
-    /**
-     * @var string
-     */
-    protected $module_suffix = 'Module';
 
     /**
      * @var string
@@ -215,83 +205,91 @@ abstract class ResourcesRepository implements ResourcesRepositoryInterface
     /**
      * 配置
      * @param $key
+     * @param bool $studly
      * @return mixed
      */
-    public function config($key)
+    public function config($key, $studly = false )
     {
+        if($studly) return Str::studly($this->config->get('bundles.' . $key));
+
         return $this->config->get('bundles.' . $key);
     }
 
     /**
      * 配置
      * @param $key
-     * @return mixed
+     * @param bool $studly
+     * @return mixed|string
      */
-    public function rootConfig($key)
+    public function rootConfig($key, $studly = false )
     {
+        if($studly) return $this->config('root.' . $key, true);
+
         return $this->config('root.' . $key);
     }
 
     /**
      * 获取资module源路径
      * @param $bundle_name
-     * @param $module_name
      * @return string
      */
-    public function getAssetsPath($bundle_name, $module_name){
-        return  $this->getModuleNamePath($bundle_name, $module_name) .'/'.$this->rootConfig('modules.generator.paths.assets');
+    public function getAssetsPath($bundle_name){
+        return  $this->getBundleNamePath($bundle_name) .'/'.$this->rootConfig('generator.paths.assets');
     }
 
     /**
      * @param $bundle
-     * @param $module
      * @return string
      */
-    public function assetPath($bundle, $module)
+    public function assetPath($bundle)
     {
-        return $this->config('paths.assets').'/'. Str::snake($bundle, '_').'/'.Str::snake($module, '_');
+        return $this->config('paths.assets').'/'. Str::snake($bundle, '_');
     }
 
     /**
      * 获取资Lang源路径
      * @param $bundle_name
-     * @param $module_name
      * @return string
      */
-    public function getLangPath($bundle_name, $module_name){
-        return  $this->getModuleNamePath($bundle_name, $module_name) .'/'.$this->rootConfig('modules.generator.paths.lang');
+    public function getLangPath($bundle_name){
+        return  $this->getBundleNamePath($bundle_name) .'/'.$this->rootConfig('generator.paths.lang');
     }
 
     /**
      * @param $bundle
-     * @param $module
      * @return string
      */
-    public function langPath($bundle, $module)
+    public function langPath($bundle)
     {
-        return $this->rootConfig('modules.generator.paths.lang').'/'. Str::snake($bundle, '_').'/'.Str::snake($module, '_');
+        return $this->rootConfig('generator.paths.lang').'/'. Str::snake($bundle, '_');
     }
 
     /**
      * 获取资Migration源路径
      * @param $bundle_name
-     * @param $module_name
      * @return string
      */
-    public function getMigrationPath($bundle_name, $module_name){
-        return  $this->getModuleNamePath($bundle_name, $module_name) .'/'.$this->rootConfig('modules.generator.paths.migration');
+    public function getMigrationPath($bundle_name){
+        return  $this->getBundleNamePath($bundle_name) .'/'.$this->rootConfig('generator.paths.migration');
     }
 
     /**
      * @param $bundle
-     * @param $module
      * @return string
      */
-    public function migrationPath($bundle, $module)
+    public function migrationPath($bundle)
     {
-        return $this->config('paths.migration').'/'. Str::snake($bundle, '_').'/'.Str::snake($module, '_');
+        return $this->config('paths.migration').'/'. Str::snake($bundle, '_');
     }
 
+    /**
+     * 转大写规范
+     * @return string
+     */
+    public function getKernelName()
+    {
+        return Str::studly($this->rootConfig('kernel'));
+    }
 
     //===============================================
 
@@ -305,7 +303,6 @@ abstract class ResourcesRepository implements ResourcesRepositoryInterface
         $this->bundle = $bundle;
         return $this;
     }
-
 
     /**
      * 转大写规范
@@ -387,93 +384,6 @@ abstract class ResourcesRepository implements ResourcesRepositoryInterface
     }
 
     //===============================================
-
-    /**
-     * 设置模块
-     * @param $module
-     * @return $this
-     */
-    public function setModule($module)
-    {
-        $this->module = $module;
-        return $this;
-    }
-
-
-    /**
-     * 转大写规范
-     * @return string
-     */
-    public function getModuleName()
-    {
-        return Str::studly($this->module);
-    }
-
-    /**
-     * 获取小写名字
-     * @return mixed
-     */
-    public function getLowerModuleName()
-    {
-        return Str::snake($this->module, '_');
-    }
-
-    /**
-     * 获取包目录
-     * @return string
-     */
-    public function getModulePath()
-    {
-        $name = $this->getLowerModuleName();
-        if (null !== $this->app_kernel && $this->app_kernel->hasModule($this->getBundleName(), $name)) {
-            return $this->app_kernel->getModule($this->getBundleName(), $name)->getPath();
-        }
-        $path = $this->getBundlePath().'/' . $this->rootConfig('bundles.generator.paths.module'). '/' . $this->getModuleName();
-        return str_replace('\\', '/', $path);
-    }
-
-    /**
-     * 获取包目录
-     * @param $bundle
-     * @param $name
-     * @return string
-     */
-    public function getModuleNamePath($bundle, $name)
-    {
-        if (null !== $this->app_kernel && $this->app_kernel->hasModule($this->getBundleName(), $name)) {
-            return $this->app_kernel->getModule($this->getBundleName(), $name)->getPath();
-        }
-
-        return $this->getBundleNamePath($bundle).'/' . $this->rootConfig('bundles.generator.paths.module'). '/' . Str::studly($name);
-    }
-
-    /**
-     * 检查指定Bundle是否已经存在Module
-     * @return bool
-     */
-    public function hasModule(){
-        if(empty($this->module)) return false;
-
-        $module = $this->getModulePath();
-
-        if(is_dir($module)) return true;
-
-        if($this->hasModuleRegister()) return true;
-
-        return false;
-    }
-
-    /**
-     * 检查Bundle是否已经注册Module
-     * @return bool
-     */
-    public function hasModuleRegister(){
-        if(empty($this->module)) return false;
-
-        if(null !== $this->app_kernel && $this->app_kernel->hasModule($this->getBundleName(), $this->getModuleName())) return true;
-
-        return false;
-    }
 
     /**数组默认值
      * @param $param

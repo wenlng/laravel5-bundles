@@ -64,13 +64,13 @@ class MiddlewareGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
+        $bundle_path = $this->getBundlePath();
         if(strtolower($this->cate) == 'a')
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.api_middleware');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.api_middleware');
         elseif(strtolower($this->cate) == 'v')
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.view_middleware');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.view_middleware');
         else
-            $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.middleware');
+            $path = $bundle_path . '/' . $this->rootConfig('generator.paths.middleware');
         return str_replace('\\', '/', $path);
     }
 
@@ -90,7 +90,7 @@ class MiddlewareGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -143,8 +143,14 @@ class MiddlewareGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         if ($this->hasMiddleware($name)) {
@@ -154,7 +160,7 @@ class MiddlewareGenerator extends Generator
 
         $this->generateFiles();
 
-        $this->console->line("Middleware <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Middleware <info>[{$name}]</info> created successfully in bundle: <info>[{$bundle_name}]</info>");
     }
 
 
@@ -174,13 +180,13 @@ class MiddlewareGenerator extends Generator
     protected function getMiddlewareNamespaceReplacement()
     {
         if(strtolower($this->cate) == 'a')
-            $middleware = $this->rootConfig('modules.generator.paths.api_middleware');
+            $middleware = $this->rootConfig('generator.paths.api_middleware');
         elseif(strtolower($this->cate) == 'v')
-            $middleware = $this->rootConfig('modules.generator.paths.view_middleware');
+            $middleware = $this->rootConfig('generator.paths.view_middleware');
         else
-            $middleware = $this->rootConfig('modules.generator.paths.middleware');
+            $middleware = $this->rootConfig('generator.paths.middleware');
 
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $middleware);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $middleware);
     }
 
 }

@@ -34,14 +34,13 @@ class SeedGenerator extends Generator
     /**
      * 获取目录
      * @param $bundle_name
-     * @param $module_name
      * @return mixed
      */
-    public function getSeederName($bundle_name, $module_name)
+    public function getSeederName($bundle_name)
     {
-        $module_path = $this->getModuleNamePath($bundle_name, $module_name);
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.seeder');
-        $_path = str_replace(base_path(), '', $path). '/'. Str::studly($module_name).'DatabaseSeeder';;
+        $bundle_path = $this->getBundleNamePath($bundle_name);
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.seeder');
+        $_path = str_replace(base_path(), '', $path). '/'. $this->getBundleName().'DatabaseSeeder';;
         return str_replace('/', '\\', trim($_path, '\\'));
     }
 
@@ -50,50 +49,26 @@ class SeedGenerator extends Generator
      * @param $bundle_name
      */
     public function seedBundle($bundle_name){
-        $bundle = $this->app_kernel->getBundle($bundle_name);
-
-        if(is_null($bundle) || !($bundle instanceof Bundle)){
-            $this->console->error("The bundle: [{$bundle_name}] not exist or not register!");
-            return;
-        }
-
-        $modules = $this->getArrDefault($bundle->getModules(),[]);
-        if(empty($modules)){
-            $this->console->error("The bundle: [{$bundle_name}] not register modules!");
-            return;
-        }
-
-        foreach ($modules as $name => $module){
-            $this->seedModule($bundle_name, Str::studly($name));
-        }
-    }
-
-    /**
-     * 处理某个bundle下的module资源
-     * @param $bundle_name
-     * @param $module_name
-     */
-    public function seedModule($bundle_name, $module_name){
-        $_class = $this->getSeederName($bundle_name, $module_name);
+        $_class = $this->getSeederName($bundle_name);
         $class = ucfirst($_class);
 
         if (class_exists($class)) {
-            $this->dbSeed($bundle_name, $module_name);
-            $this->console->line("<info>Seed to</info>: bundle:<info>[{$bundle_name}]</info> or module:<info>[{$module_name}]</info>.");
+            $this->dbSeed($bundle_name);
+            $this->console->line("<info>Seed to</info>: bundle:<info>[{$bundle_name}]</info>.");
         } else {
-            $this->console->error("bundle:[{$bundle_name}] or module:[{$module_name}] Class [$class] does not exists.");
+            $this->console->error("bundle:[{$bundle_name}] Class [$class] does not exists.");
         }
         return;
+
     }
 
     /**
      * 执行seed
      * @param $bundle_name
-     * @param $module_name
      */
-    protected function dbSeed($bundle_name, $module_name)
+    protected function dbSeed($bundle_name)
     {
-        $params = [ '--class' => $this->class ?: $this->getSeederName($bundle_name, $module_name), ];
+        $params = [ '--class' => $this->class ?: $this->getSeederName($bundle_name), ];
 
         if ($option = $this->console->option('database')) {
             $params['--database'] = $option;
@@ -117,19 +92,7 @@ class SeedGenerator extends Generator
             return;
         }
 
-        $module_name = $this->getModuleName();
-        if(!empty($module_name)){
-            if (!$this->hasModule()) {
-                $this->console->error("The module: [{$module_name}] not exist!");
-                return;
-            }
-        }
-
-        if(!empty($bundle_name) && !empty($module_name)){
-            $this->seedModule($bundle_name, $module_name);
-        }else{
-            $this->seedBundle($bundle_name);
-        }
+        $this->seedBundle($bundle_name);
 
         return;
     }

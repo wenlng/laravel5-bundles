@@ -34,12 +34,8 @@ class MigrateRefreshCommand extends Command
     public function fire()
     {
         $bundle = $this->getTrimName($this->option('bundle'));
-        $module = $this->getTrimName($this->option('module'));
 
-        $params=[
-            '-b' => $bundle,
-            '-m' => $module,
-        ];
+        $params=[ '-b' => $bundle ];
         if($this->option('database')){
             $params['--database'] = $this->option('database');
         }
@@ -52,10 +48,7 @@ class MigrateRefreshCommand extends Command
         $this->call('bundle:migrate', $params);
 
         if ($this->option('seed')) {
-            $this->call('bundle:seed', [
-                '-b' => $bundle,
-                '-m' => $module,
-            ]);
+            $this->call('bundle:seed', [ '-b' => $bundle, ]);
         }
     }
 
@@ -69,7 +62,6 @@ class MigrateRefreshCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'],
             ['force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'],
             ['seed', null, InputOption::VALUE_NONE, 'Indicates if the seed task should be re-run.'],

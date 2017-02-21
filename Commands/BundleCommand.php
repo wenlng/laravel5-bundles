@@ -41,6 +41,7 @@ class BundleCommand extends Command
             (new BundleGenerator($name))
                 ->setConsole($this)
                 ->setForce($this->option('force'))
+                ->setClean($this->option('clean'))
                 ->generate();
         }
     }
@@ -65,6 +66,7 @@ class BundleCommand extends Command
     protected function getOptions()
     {
         return [
+            ['clean', 'c', InputOption::VALUE_NONE, '生成一个模块不要小实例'],
             ['force', 'f', InputOption::VALUE_NONE, '如果Bundle存在时强制删除旧的重新生成.'],
         ];
     }

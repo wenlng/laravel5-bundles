@@ -97,36 +97,12 @@ class Controller extends BaseController implements ControllerInterface
     }
 
     /**
-     * 获取模块
-     * @param null $bundle
-     * @param null $module
-     * @return array|mixed|null
-     */
-    public function getModule($bundle = null, $module = null){
-        if(!$this->is_init) $this->init();
-
-        if(!is_null($bundle) || !is_null($module))
-            return $this->app_kernel->getModule($bundle, $module);
-        else
-            return $this->app_kernel->getModules();
-    }
-
-    /**
      * 获取当前包
      * @return mixed|null
      */
     public function getCurrentBundle(){
         if(!$this->is_init) $this->init();
         return $this->app_kernel->getCurrentBundle($this);
-    }
-
-    /**
-     * 获取当前模块
-     * @return mixed|null
-     */
-    public function getCurrentModule(){
-        if(!$this->is_init) $this->init();
-        return $this->app_kernel->getCurrentModule($this);
     }
 
     /**
@@ -143,9 +119,9 @@ class Controller extends BaseController implements ControllerInterface
      * @param $name
      * @return string|null
      */
-    public function getSPP($name){
+    public function getStoragePath($name = ''){
         if(!$this->is_init) $this->init();
-        return $this->app_kernel->getStoragePath($name);
+        return $this->getCurrentBundle()->getStoragePath($name);
     }
 
     /**
@@ -153,9 +129,9 @@ class Controller extends BaseController implements ControllerInterface
      * @param $name
      * @return string|null
      */
-    public function getAUP($name){
+    public function getAssetUrl($name = ''){
         if(!$this->is_init) $this->init();
-        return $this->app_kernel->getAssetUrl($name);
+        return $this->getCurrentBundle()->getAssetUrl($name);
     }
 
     /**
@@ -182,40 +158,15 @@ class Controller extends BaseController implements ControllerInterface
     }
 
     /**
-     * 检查模块是否存在
-     * @param $bundle
-     * @param $module
-     * @return mixed
-     */
-    public function hasModule($bundle, $module){
-        if(!$this->is_init) $this->init();
-
-        return $this->app_kernel->hasModule($bundle, $module);
-    }
-
-    /**
-     * 获取模块参数
-     * @param $bundle
-     * @param $module
-     * @return array|null
-     */
-    public function getModuleParam($bundle, $module){
-        if(!$this->is_init) $this->init();
-
-        return $this->app_kernel->getModuleParam($bundle, $module);
-    }
-
-    /**
      * 获取模块相关参数
      * @param $bundle
-     * @param $module
      * @param $name
-     *  $name = path、name、bundle_name、parameter、routes、aliases、providers、route_middleware、groups_middleware、events、subscribes、consoles
+     *  $name = path、name、parameter、routes、aliases、providers、route_middleware、groups_middleware、events、subscribes、consoles
      * @return mixed|null
      */
-    public function getModuleRegisterParam($bundle, $module, $name){
+    public function getRegisterParam($bundle, $name){
         if(!$this->is_init) $this->init();
 
-        return $this->app_kernel->getModuleRegisterParam($bundle, $module, $name);
+        return $this->app_kernel->getRegisterParam($bundle, $name);
     }
 }

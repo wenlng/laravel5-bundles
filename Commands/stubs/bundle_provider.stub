@@ -4,7 +4,7 @@ namespace %PROVIDER_NAMESPACE%;
 
 use Illuminate\Support\ServiceProvider;
 
-class %MODULE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
+class %BUNDLE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
 
 	/**
 	 * Indicates if loading of the provider is deferred.
@@ -43,10 +43,10 @@ class %MODULE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
 	protected function registerConfig()
 	{
 		$this->publishes([
-		    __DIR__ . '/../Config/%MODULE_LOWER_NAME%.php' => config_path('%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%.php'),
+		    __DIR__ . '/../Config/%BUNDLE_LOWER_NAME%.php' => config_path('%BUNDLE_LOWER_NAME%.php'),
 		]);
 		$this->mergeConfigFrom(
-		    __DIR__ . '/../Config/%MODULE_LOWER_NAME%.php', '%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%'
+		    __DIR__ . '/../Config/%BUNDLE_LOWER_NAME%.php', '%BUNDLE_LOWER_NAME%'
 		);
 	}
 
@@ -57,7 +57,7 @@ class %MODULE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
 	 */
 	public function registerViews()
 	{
-		$viewPath = base_path('resources/views/bundles/%BUNDLE_LOWER_NAME%/%MODULE_LOWER_NAME%');
+		$viewPath = base_path('resources/views/%ROOT_NAME%/%BUNDLE_LOWER_NAME%');
 
 		$sourcePath = __DIR__.'/../Resources/views';
 
@@ -66,8 +66,8 @@ class %MODULE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
 		]);
 
 		$this->loadViewsFrom(array_merge(array_map(function ($path) {
-			return $path . '/bundles/%BUNDLE_LOWER_NAME%/%MODULE_LOWER_NAME%';
-		}, \Config::get('view.paths')), [$sourcePath]), '%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%');
+			return $path . '/%ROOT_NAME%/%BUNDLE_LOWER_NAME%';
+		}, \Config::get('view.paths')), [$sourcePath]), '%BUNDLE_LOWER_NAME%');
 	}
 
 	/**
@@ -77,12 +77,12 @@ class %MODULE_STUDLY_NAME%ServiceProvider extends ServiceProvider {
 	 */
 	public function registerTranslations()
 	{
-		$langPath = base_path('resources/lang/bundles/%BUNDLE_LOWER_NAME%/%MODULE_LOWER_NAME%');
+		$langPath = base_path('resources/lang/%ROOT_NAME%/%BUNDLE_LOWER_NAME%');
 
 		if (is_dir($langPath)) {
-			$this->loadTranslationsFrom($langPath, '%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%');
+			$this->loadTranslationsFrom($langPath, '%BUNDLE_LOWER_NAME%');
 		} else {
-			$this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', '%BUNDLE_LOWER_NAME%@%MODULE_LOWER_NAME%');
+			$this->loadTranslationsFrom(__DIR__ .'/../Resources/lang', '%BUNDLE_LOWER_NAME%');
 		}
 	}
 

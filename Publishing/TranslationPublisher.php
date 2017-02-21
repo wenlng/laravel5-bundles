@@ -13,29 +13,26 @@ class TranslationPublisher extends Publisher
     public function __construct($bundle, $module)
     {
         $this->setBundle($bundle);
-        $this->setModule($module);
         parent::__construct();
     }
 
     /**
      * 获取资源PATH
      * @param $bundle_name
-     * @param $module_name
      * @return string
      */
-    public function getTargetPath($bundle_name, $module_name){
-        return  lcfirst($this->langPath($bundle_name, $module_name));
+    public function getTargetPath($bundle_name){
+        return  lcfirst($this->langPath($bundle_name));
     }
 
 
     /**
      * 获取资module源路径
      * @param $bundle_name
-     * @param $module_name
      * @return string
      */
-    public function getSourcePath($bundle_name, $module_name){
-        return  $this->getLangPath($bundle_name, $module_name);
+    public function getSourcePath($bundle_name){
+        return  $this->getLangPath($bundle_name);
     }
 
     /**
@@ -52,19 +49,7 @@ class TranslationPublisher extends Publisher
             return;
         }
 
-        $module_name = $this->getModuleName();
-        if(!empty($module_name)){
-            if (!$this->hasModule()) {
-                $this->console->error("The module: [{$module_name}] not exist!");
-                return;
-            }
-        }
-
-        if(!empty($bundle_name) && !empty($module_name)){
-            $this->publishModule($bundle_name, $module_name);
-        }else{
-            $this->publishBundle($bundle_name);
-        }
+        $this->publishBundle($bundle_name);
 
         return;
     }

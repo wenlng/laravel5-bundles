@@ -47,8 +47,8 @@ class JobGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.job');
+        $bundle_path = $this->getBundlePath();
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.job');
         return str_replace('\\', '/', $path);
     }
 
@@ -68,7 +68,7 @@ class JobGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -120,8 +120,14 @@ class JobGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         $job = $name. $this->job_suffix;
@@ -132,7 +138,7 @@ class JobGenerator extends Generator
 
         $this->generateFiles();
 
-        $this->console->line("Job <info>[{$job}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Job <info>[{$job}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
     }
 
     /**
@@ -150,8 +156,8 @@ class JobGenerator extends Generator
      */
     protected function getJobNamespaceReplacement()
     {
-        $job = $this->rootConfig('modules.generator.paths.job');
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $job);
+        $job = $this->rootConfig('generator.paths.job', true);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $job);
     }
 
 }

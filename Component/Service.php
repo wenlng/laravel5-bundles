@@ -71,7 +71,7 @@ abstract class Service extends ToolExtend implements ServiceInterface
         $this->app_kernel = $bootstrap->isBootKernel() ? $bootstrap->getKernel() : null;
     }
 
-	/**
+    /**
      * 创建一个类
      * @param $class
      * @param bool $reset
@@ -103,7 +103,7 @@ abstract class Service extends ToolExtend implements ServiceInterface
         ];
         throw new ServiceException($err);
     }
-	
+
     /**
      * 执行实例
      *  调用： serviceClassName::serviceClassFunc
@@ -143,10 +143,10 @@ abstract class Service extends ToolExtend implements ServiceInterface
                 ];
                 throw new ServiceNotFoundException($err);
             }
-			
-			if(!empty($param))
-				return call_user_func([$this->classes[$_class], $func], $param);
-			return call_user_func([$this->classes[$_class], $func]);
+            if(!empty($param))
+                return call_user_func([$this->classes[$_class], $func], $param);
+
+            return call_user_func([$this->classes[$_class], $func]);
         }
 
         if (!isset($this->class_files[$_class])) {
@@ -167,13 +167,13 @@ abstract class Service extends ToolExtend implements ServiceInterface
                 throw new ServiceNotFoundException($err);
             }
 
-			if(!empty($param))
-				return call_user_func([$service, $func], $param);
-			
-			return call_user_func([$service, $func]);
+            if(!empty($param))
+                return call_user_func([$service, $func], $param);
+
+            return call_user_func([$service, $func]);
         }
 
-		$err = [
+        $err = [
             'en' => "[{$class}] Failed to perform service class!",
             'zh' => "[{$class}] 执行服务类失败!"
         ];
@@ -362,6 +362,37 @@ abstract class Service extends ToolExtend implements ServiceInterface
         }
 
         $_class = new \ReflectionClass($class['class']);
+
+        //处理构造依赖注入
+        $constructor = $_class->getConstructor();
+        if(!is_null($constructor)){
+            $parameters = $constructor->getParameters();
+            foreach ($parameters as $pa){
+                $paramStr = $pa->__toString();
+                $pattern = '/Parameter #[\d]+ .*?\[ <required> (.*?) \]/is';
+                preg_match($pattern, $paramStr, $result);
+                if (count($result) < 2) continue;
+
+                $classStr = $result[1];
+                $paramClass = trim(str_replace(' $'.$pa->getName(), '', $classStr));
+
+                if(!class_exists($paramClass)) continue;
+
+                $ServiceClass = new \ReflectionClass($paramClass);
+                $isTo = false;
+                foreach($ServiceClass->getInterfaceNames() as $interface){
+                    if($interface === 'Awen\Bundles\Contracts\ServiceKernelInterface') $isTo = true;
+                    
+                    if($interface === 'Awen\Bundles\Contracts\RepositoryInterface') $isTo = true;
+                }
+
+                if($isTo){
+                    $this->app->bindIf($paramClass);
+                    $param[$pa->getPosition()] = $this->app->offsetGet($paramClass);
+                }
+            }
+        }
+
         $re_class = $_class->newInstanceArgs($param);
 
         $cache && $this->classes[$_name] = $re_class;

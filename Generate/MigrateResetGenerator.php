@@ -9,20 +9,17 @@
 
 namespace Awen\Bundles\Generate;
 
-use Illuminate\Support\Str;
-
 class MigrateResetGenerator extends Generator
 {
     /**
      * 获取目录
      * @param $bundle_name
-     * @param $module_name
      * @return mixed
      */
-    public function getNamePath($bundle_name, $module_name)
+    public function getNamePath($bundle_name)
     {
-        $module_path = $this->getModuleNamePath($bundle_name, $module_name);
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.migration');
+        $bundle_path = $this->getBundleNamePath($bundle_name);
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.migration');
         return str_replace('\\', '/', $path);
     }
 
@@ -31,30 +28,17 @@ class MigrateResetGenerator extends Generator
      * @param $bundle_name
      */
     public function rollbackBundle($bundle_name){
-        $bundle = $this->app_kernel->getBundle($bundle_name);
-        foreach ($bundle->getModules() as $name => $module){
-            $this->rollbackModule($bundle_name, Str::studly($name));
-        }
-    }
-
-    /**
-     * 处理某个bundle下的module迁移
-     * @param $bundle_name
-     * @param $module_name
-     */
-    public function rollbackModule($bundle_name, $module_name){
-        $path = $this->getNamePath($bundle_name, $module_name);
+        $path = $this->getNamePath($bundle_name);
 
         $migrate = $this->createMigrate($path);
         $migrated = $migrate->reset();
         if (count($migrated)) {
             foreach ($migrated as $migration) {
-                $this->console->line("<info>Migrate [{$migration}] to</info>: bundle:<info>[{$bundle_name}]</info> or module:<info>[{$module_name}]</info> ");
+                $this->console->line("<info>Migrate [{$migration}] to</info>: bundle:<info>[{$bundle_name}]</info>");
             }
 
             return;
         }
-
         $this->console->comment('Nothing to reset.');
     }
 
@@ -73,19 +57,7 @@ class MigrateResetGenerator extends Generator
             return;
         }
 
-        $module_name = $this->getModuleName();
-        if(!empty($module_name)){
-            if (!$this->hasModule()) {
-                $this->console->error("The module: [{$module_name}] not exist!");
-                return;
-            }
-        }
-
-        if(!empty($bundle_name) && !empty($module_name)){
-            $this->rollbackModule($bundle_name, $module_name);
-        }else{
-            $this->rollbackBundle($bundle_name);
-        }
+        $this->rollbackBundle($bundle_name);
 
         return;
     }

@@ -37,7 +37,6 @@ class MigrateRollbackCommand extends Command
         (new MigrateRollbackGenerator())
         ->setConsole($this)
         ->setBundle($this->getTrimName($this->option('bundle')))
-        ->setModule($this->getTrimName($this->option('module')))
         ->rollback();
     }
 
@@ -51,7 +50,6 @@ class MigrateRollbackCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 

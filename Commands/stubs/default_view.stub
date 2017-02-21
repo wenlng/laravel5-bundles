@@ -2,7 +2,7 @@
 <div style="text-align: center;">
 <h1>Hello World</h1>
 <p>
-This view is loaded from Bundle: "%BUNDLE_STUDLY_NAME%" to the module: "%MODULE_STUDLY_NAME%"!
+This view is loaded from Bundle: "%BUNDLE_STUDLY_NAME%"!
 </p>
 </div>
 

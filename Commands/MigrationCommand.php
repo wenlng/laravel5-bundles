@@ -38,7 +38,6 @@ class MigrationCommand extends Command
         (new MigrationGenerator($this->argument('name')))
         ->setConsole($this)
         ->setBundle($this->getTrimName($this->option('bundle')))
-        ->setModule($this->getTrimName($this->option('module')))
         ->setTable($this->getTrimName($this->option('table')))
         ->setFields($this->getTrimName($this->option('fields')))
         ->generate();
@@ -65,7 +64,6 @@ class MigrationCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['fields', 'f', InputOption::VALUE_OPTIONAL, '指定字段'],
             ['table', 't', InputOption::VALUE_OPTIONAL, '指定table'],
         ];

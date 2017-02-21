@@ -41,7 +41,6 @@ class ListenerCommand extends Command
             (new ListenerGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->setEvent($this->getTrimName($this->option('event')))
                 ->generate();
             
@@ -69,7 +68,6 @@ class ListenerCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['event', 'e', InputOption::VALUE_REQUIRED, '指定event'],
         ];
     }

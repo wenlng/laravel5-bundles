@@ -1,8 +1,9 @@
-Laravel 5 Bundles-Modules
+Laravel 5 Bundles
 ==============
 
-### Bundles-Modules 是一个把应用分成多个包，一个包分成若干个小模块.
-使用这个Bundles系统可以抛弃自带的APP目录了，使用全新的开发目录结构/，使开发变得更简单
+### Bundles 是一个把应用包系统，从2.0.0版本开始...
+
+使用这个Bundles系统可以抛弃自带的APP目录了，使用全新的开发目录结构/，使开发变目录分离得更简单、使用应用强内聚、松耦合
 
 
 ## 安装 Installation
@@ -13,7 +14,7 @@ To install through composer, simply put the following in your composer.json file
 ```json
 {
     "require": {
-        "awen/bundles": "~1.1.0"
+        "awen/bundles": "~2.0.0"
     }
 }
 ```
@@ -24,7 +25,7 @@ And then run `composer install` to fetch the package.
 
 或者 or
 ```
-composer require "awen/bundles:~1.1.0"
+composer require "awen/bundles:~2.0.0"
 ```
 
 
@@ -65,49 +66,45 @@ By default controllers, entities or repositories not loaded automatically. You c
 ```
 
 
-## < Bundles-Modules 开发目录结构 >
+## < Bundles开发目录结构 >
 ```
 bundles
-  ├── [Frontend|Backend|Wechat|Mobile|Api]
-    ├── Modules/
-      ├── Home/
-        ├── Assets/
-        ├── Console/
-        ├── Database/
-          ├── Migrations/
-          ├── Seeders/
-        ├── Entities/
-        ├── HttpApi/
-          ├── Controllers/
-          ├── Middleware/
-          ├── Requests/
-          ├── routes.php
-        ├── HttpView/
-          ├── Controllers/
-          ├── Middleware/
-          ├── Requests/
-          ├── routes.php
-        ├── Providers/
-           ├── HomeServiceProvider.php
-        ├── Resources/
-          ├── lang/
-          ├── views/
-            ├── api/
-            ├── view/
-        ├── Repositories/
-        ├── Middleware/
-        ├── Events/
-        ├── Listeners/
-        ├── Jobs/
-        ├── Exceptions/
+    ├── [Home|Admin|Wechat|Mobile|Api|...]
+  	    ├── Assets/             //前端资源
+  	    ├── Console/            //命令行
+  	    ├── Database/           //数据库迁移控制
+  	        ├── Migrations/
+  	        ├── Seeders/
+  	    ├── Entities/           //Model实体
+  	    ├── HttpApi/            //PC网页操作api
+  	        ├── Controllers/
+  	        ├── Middleware/
+  	        ├── Requests/
+  	        ├── routes.php
+  	    ├── HttpView/           //PC网页展示view
+  	        ├── Controllers/
+  	        ├── Middleware/
+  	        ├── Requests/
+  	        ├── routes.php
+  	    ├── Providers/          //服务提供者
+  	        ├── HomeServiceProvider.php     //自带服务
+  	    ├── Resources/          //资源
+  	        ├── lang/
+  	        ├── views/
+  	            ├── api/
+  	            ├── view/
+  	    ├── Repositories/       //Model仓库
+  	    ├── Middleware/         //api与view公用中间件
+  	    ├── Events/             //事件
+  	    ├── Listeners/          //监听器
+  	    ├── Jobs/               //队列
+  	    ├── Exceptions/         //异常处理
+        ├── Services/           //服务
+            ├── Service.php     //注册服务
+            ├── //....
         ├── composer.json
-        ├── HomeModule.php
-    ├── Services/
-      ├── Service.php
-      ├── //....
-    ├── composer.json
-    ├── [Frontend|Backend|Wechat|Mobile|Api]Bundle.php
-  ├── AppKernl.php
+        ├── [Home|Admin|Wechat|Mobile|Api|...]Bundle.php
+    ├── AppKernl.php    //注册Bundle
 ```
 
 
@@ -117,41 +114,29 @@ bundles
 - laravel技术交流群：178498936
 - 作者联系QQ：871024608
 
-### 一、简单注册Bundle与Module：
-1.创建一个前端(Frontend)的Bundle
+### 一、简单注册Bundle：
+1.创建一个前端(Home)的Bundle
 ```
-php artisan bundle:make Frontend
+php artisan bundle:make Home
 ```
 2.创建Bundle后需要注册才能加载使用，在Bundle目录下AppKernel.php里的registerBundles()方法注册Bundle
 ```
   return [
-    \Bundles\Frontend\FrontendBundle::class,
+    \Bundles\Home\HomeBundle::class,
   ];
 ```
-3.完成Bundle后需要创建一个主页模块(Home)的 Module
-```
-php artisan bundle:make-module Home -b=Frontend
-```
-
-4.Module也一样需要注册才能加载使用，在Frontend目录下FrontendBundle.php里的registerModules()方法注册Module
-```
-return [
-  \Bundles\Frontend\Modules\Home\HomeModule::class,
-];
-```
-
-5.在浏览器打开url: ..../frontend/home就会显示 Hello World，说明注册成功了
+3.在浏览器打开url: ..../home就会显示 Hello World，说明注册成功了
 
 
-### 二、简单使用服务：
+### 二、简单使用Bundle中的服务：
 1.创建一个服务，在目录生成一个服务文件并生成配置文件在Config目录里
 ```
-php artisan bundle:make-service tool -b=Frontend -c
+php artisan bundle:make-service tool -b=Home -c
 ```
 2.服务一样需要注册才能使用，在Services目录下的Service.php的registerServices()里注册
 ```
 'tool' => [
-  'class' => \Bundles\Frontend\Services\Tool\ToolService::class,
+  'class' => \Bundles\Home\Services\Tool\ToolService::class,
   'config' => __DIR__ . '/Tool/Config/config.php'
  ],
 ```
@@ -167,15 +152,15 @@ class PayClass{
 ```
 return [
   'pay' =>[
-   'class' => \Bundles\Frontend\Services\Tool\PayClass::class, //这是类
+   'class' => \Bundles\Home\Services\Tool\PayClass::class, //这是类
    'param' => [] //这是类里的构造参数，参数下面详情讲解
   ]
 ]
 ```
 
-5.在任何一个控制器controller里新建一个构造方法依赖注入服务( Bundles\Frontend\Services\Service )即可使用：
+5.在任何一个控制器controller里新建一个构造方法依赖注入服务( Bundles\Home\Services\Service )即可使用：
 ```
-use Bundles\Frontend\Services\Service;
+use Bundles\Home\Services\Service;
 class IndexController extends Controller{
   protected $service;
   public function __construct(Service $servic){
@@ -184,7 +169,7 @@ class IndexController extends Controller{
 
   public function index(){
     //获取服务形式下面详情讲
-    $tool_service = $this->service->getService('frontend:tool');
+    $tool_service = $this->service->getService('home:tool');
     //执行服务里的类方法
     $tool_service->execute('pay.show');
   }
@@ -210,7 +195,7 @@ name   表示普通字符串参数
 ```
 3.拿上面的Tool服务再加一个类做实践，在Tool目录下新建一个StrClass类test方法：
 ```
-use Bundles\Frontend\Services\Tool\PayClass;
+use Bundles\Home\Services\Tool\PayClass;
 class StrClass{
   protected $pay;
   protected $name;
@@ -229,7 +214,7 @@ class StrClass{
 ```
 return [
   'str' =>[
-   'class' => \Bundles\Frontend\Services\Tool\StrClass::class,
+   'class' => \Bundles\Home\Services\Tool\StrClass::class,
    'param' => ['@pay', 'Awen']
   ]
 ]
@@ -239,7 +224,7 @@ return [
 
 5.在控制器里就可以使用了
 ```
-use Bundles\Frontend\Services\Service;
+use Bundles\Home\Services\Service;
 class IndexController extends Controller{
   protected $service;
   public function __construct(Service $servic){
@@ -248,46 +233,45 @@ class IndexController extends Controller{
 
   public function index(){
     //获取服务形式下面详情讲
-    $tool_service = $this->service->getService('frontend:tool');
+    $tool_service = $this->service->getService('home:tool');
     //执行服务里的类方法
     $tool_service->execute('str.test');
 
     或者：
-    $tool_service_str = $this->service->getService('frontend:tool')->make('str');
+    $tool_service_str = $this->service->getService('home:tool')->make('str');
     $tool_service_str->test();
   }
 }
 ```
-``` 注意：getService('frontend:tool') 有第二个参数，默认是false，表示无论获取多少次这个服务都是同一个实例，如果第二个参数为true时，第二次后获取的不是同一个服务实例，是一个新的服务实例```
+``` 注意：getService('home:tool') 有第二个参数，默认是false，表示无论获取多少次这个服务都是同一个实例，如果第二个参数为true时，第二次后获取的不是同一个服务实例，是一个新的服务实例```
 
-``` 当$this->getService('frontend:tool',true) 第二个参数为true时表示获取新的服务对象```
+``` 当$this->getService('home:tool',true) 第二个参数为true时表示获取新的服务对象```
 
-``` 与继承基类controller 的 $this->getService('frontend:tool') 一样的效果```
+``` 与继承基类controller 的 $this->getService('home:tool') 一样的效果```
+
+``` 服务内部类仅可以依懒注入另外一个Bundle的Service与Model仓库，不能注入另外一个Bundle的服务内部类 ```
 
 
 ### 四、控制器基类Controller：
-1.加载视图格式： 'frontend@home::view.index' //格式BundleName@ModuleName::view....
+1.加载视图格式： 'home::view.index' //格式BundleName::view....
 
-2.$this->getService('frontend:tool'),获取服务，与$this->service->getService('frontend:tool')一样，参数也一样
+2.$this->getService('home:tool'),获取服务，与$this->service->getService('home:tool')一样，参数也一样
 
 3.$this->getBundle($bundle_name); //传入名称获取单个Bundle，不传参数表示获取所有Bundle
 
-4.$this->getModule($bundle_name,$module_name); //传入Bundle名称，获取所有Module，传入Module名称获取单个Module
+4.$this->getCurrentBundle() //获取当前的Bundle，注意目录结构不能随意修改
 
-5.$this->getCurrentBundle() //获取当前的Bundle，注意目录结构不能随意修改
+5.$this->getUseTime() //获取当前内核处理所有Bundle的时间
 
-6.$this->getCurrentModule() //获取当前的Module，注意目录结构不能随意修改
+6.$this->getBundleParam($bundle_name) //获取当前Bundle的相关参数
 
-7.$this->getUseTime() //获取当前内核处理所有Bundle的时间
+7.$this->hasBundle($bundle_name);   //检查Bundle是否存在
 
-8.$this->getBundleParam($bundle_name) //获取当前Bundle的相关参数
+8.$this->getBundleRegisterParam($bundle, $name);   //获取某个Bundle里注册的相关参数 $name 可以是：path、name、parameter、routes、aliases、providers、route_middleware、groups_middleware、events、subscribes、consoles
 
-9.$this->hasBundle($bundle_name);   //检查Bundle是否存在
+9.$this->getAssetUrl()	//获取当前Bundle资源根url
 
-10.$this->hasModule($bundle_name, $module_name);   //检查Bundle的Module是否存在
-
-11.$this->getModuleRegisterParam($bundle, $module, $name);   //获取某个Bundle里注册Module的相关参数 $name 可以是：path、name、bundle_name、parameter、routes、aliases、providers、route_middleware、groups_middleware、events、subscribes、consoles
-
+10.$this->getStoragePath()	//获取资源存储根path
 
 ### 五、Bundle可以操作的方法：
 $bundle = $this->getCurrentBundle();    //获取当前Bundle
@@ -298,39 +282,24 @@ $bundle->getPath(); //获取路径
 
 $bundle->getParam(); //获取参数
 
-$bundle->getModuleParam($module_name, $name); //获取Module相关参数，$name 与 $this->getModuleRegisterParam($bundle, $module, $name);的 $name 一样
-
-$bundle->getModules(); //获取所有Module
-
-$bundle->getModule($name); //检查某个Module
+$bundle->getRegisterParam($name); //获取相关参数，$name与$this->getBundleRegisterParam($bundle, $name);一样
 
 $bundle->getServices(); //获取所有Services
 
-$bundle->hasModule($name); //检查Module是否存在
+$bundle->getAssetUrl()	//获取当前Bundle资源根url
 
-
-### 六、Module可以操作的方法：
-$module = $this->getCurrentModule();    //获取当前Module
-
-$module->getLoweName(); //获取名称
-
-$module->getPath(); //获取路径
-
-$module->getModuleKey(); //获取当前Bundle与Module结合的key
-
-$module->getRegisterParam($name); //获取Module相关参数，$name 与 $this->getModuleRegisterParam($bundle, $module, $name);的 $name 一样
-
+$bundle->getStoragePath()	//获取资源存储根path
 
 
 ### 七、仓库（Model|Repository）模式使用：
-1.创建Model和Repository，-a表示两个同时生成，在Frontend对应的Module目录下的Entities创建TestModel，和Repositories目录创建TestRepository
+1.创建Model和Repository，-a表示两个同时生成，在Home目录下的Entities创建TestModel，和Repositories目录创建TestRepository
 ```
-php artisan bundle:make-model test -b=Frontend -m=Home -a
+php artisan bundle:make-model test -b=Home -a
 ```
 
 2.在任何控制器中使用Repository
 ```
-use Bundles\Frontend\Modules\Home\Repositories\TestRepository;;
+use Bundles\Home\Repositories\TestRepository;;
 class IndexController extends Controller{
   protected $test;
   public function __construct(TestRepository $test){
@@ -449,290 +418,238 @@ php artisan bundle:make <BundleName> <BundleName> ...
 php artisan bundle:make <BundleName> -f
 ```
 
-**2-1.指定一个Bundle生成单个Module：**
+**2-1.指定一个Bundle，生成单个Controller，默认在ViewHttp下：**
 ```
-php artisan bundle:make <ModuleName> -b=<BundleName>
-```
-
-**2-2.指定一个Bundle生成多个Module：**
-```
-php artisan bundle:make <ModuleName> <ModuleName> ... -b=<BundleName>
+php artisan bundle:make-controller <ControllerName> -b=<BundleName>
 ```
 
-**2-3.指定一个Bundle生成Module，-c (--clean)不生成小实例(路由+控制器+视图文件)：**
+**2-2.指定一个Bundle，生成多个Controller，默认在ViewHttp下：**
 ```
-php artisan bundle:make-module <ModuleName> -b=<BundleName> -c
-```
-
-**2-4.指定一个Bundle生成Module，如果遇到Module存在时，-f (--force)表示强制生成，会把旧的删除，再重新生成：**
-```
-php artisan bundle:make-module <ModuleName> -b=<BundleName> -f
+php artisan bundle:make-controller <ControllerName> <ControllerName> ... -b=<BundleName>
 ```
 
-**3-1.指定一个Bundle的Module，生成单个Controller，默认在ViewHttp下：**
+**2-3.指定一个Bundle，生成Controller,-c (--cate)指定分类下的Controllers {  a(ApiHttp) | v(ViewHttp) } ：**
 ```
-php artisan bundle:make-controller <ControllerName> -b=<BundleName> -m=<ModuleName>
-```
-
-**3-2.指定一个Bundle的Module，生成多个Controller，默认在ViewHttp下：**
-```
-php artisan bundle:make-controller <ControllerName> <ControllerName> ... -b=<BundleName> -m=<ModuleName>
+artisan bundle:make-controller <ControllerName> -b=<BundleName> -c=<a|v>
 ```
 
-**3-3.指定一个Bundle的Module，生成Controller,-c (--cate)指定分类下的Controllers {  a(ApiHttp) | v(ViewHttp) } ：**
+**2-4.指定一个Bundle，生成Controller, -p (--path) 在Controller目录带目录,例如：-p=index 就会在对应Controller目录下的index目录下生成Controller ：**
 ```
-artisan bundle:make-controller <ControllerName> -b=<BundleName> -m=<ModuleName> -c=<a|v>
-```
-
-**4-1.指定一个Bundle的Module，生成单个Command ：**
-```
-artisan bundle:make-command <CommandName> -b=<BundleName> -m=<ModuleName>
+artisan bundle:make-controller <ControllerName> -b=<BundleName> -p=index
 ```
 
-**4-2.指定一个Bundle的Module，生成多个Command ：**
+**2-5.指定一个Bundle，生成Controller, -e(--extend) 指定继承对应的基类Controller，例如当前生成的Controller继承CommonController：**
 ```
-artisan bundle:make-command <CommandName> <CommandName> ... -b=<BundleName> -m=<ModuleName>
-```
-
-**4-3.指定一个Bundle的Module，生成多个Command，-c (--command)并指定命令的名称 ：**
-```
-php artisan bundle:make-command <CommandName> -b=<BundleName> -m=<ModuleName> -c=<command:name>
+artisan bundle:make-controller <ControllerName> -b=<BundleName> -e=...\CommonController
 ```
 
-**5-1.指定一个Bundle的Module，生成单个Model ：**
+**3-1.指定一个Bundle，生成单个Command ：**
 ```
-php artisan bundle:make-model <ModelName> -b=<BundleName> -m=<ModuleName>
-```
-
-**5-2.指定一个Bundle的Module，生成多个Model ：**
-```
-php artisan bundle:make-model <ModelName> <ModelName> .... -b=<BundleName> -m=<ModuleName>
+artisan bundle:make-command <CommandName> -b=<BundleName>
 ```
 
-**5-3.指定一个Bundle的Module，生成Model, -c (--cate)指定生成Model还是Repository { m (model) | r (repository) }：**
+**3-2.指定一个Bundle，生成多个Command ：**
 ```
-php artisan bundle:make-model <ModelName> -b=<BundleName> -m=<ModuleName> -c=<m|r>
-```
-
-**5-4.指定一个Bundle的Module，-a (--all) 生成Model和Repository：**
-```
-php artisan bundle:make-model <ModelName> -b=<BundleName> -m=<ModuleName> -a
+artisan bundle:make-command <CommandName> <CommandName> ... -b=<BundleName> 
 ```
 
-**5-5.指定一个Bundle的Module，生成Model和Repository，-i (--id)指定Model的ID主键：**
+**3-3.指定一个Bundle，生成多个Command，-c (--command)并指定命令的名称 ：**
 ```
-php artisan bundle:make-model <ModelName> -b=<BundleName> -m=<ModuleName> -i=<ModelId>
-```
-
-**6-1.指定一个Bundle的Module，默认在module目录下的Middleware生成单个Middleware ：**
-```
-php artisan bundle:make-middleware <MiddlewareName> -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-command <CommandName> -b=<BundleName> -c=<command:name>
 ```
 
-**6-2.指定一个Bundle的Module，默认在module目录下的Middleware生成多个Middleware ：**
+**4-1.指定一个Bundle，生成单个Model ：**
 ```
-php artisan bundle:make-middleware <MiddlewareName> <MiddlewareName> ... -b=<BundleName> -m=<ModuleName>
-```
-
-**6-3.指定一个Bundle的Module，-c (--cate)指定是在 a(ApiHttp) | v(ViewHttp) | r(Module) 下的Middleware目录下生成：**
-```
-php artisan bundle:make-middleware <MiddlewareName> -b=<BundleName> -m=<ModuleName> -c=<a|v|r>
+php artisan bundle:make-model <ModelName> -b=<BundleName>
 ```
 
-
-**7-1.指定一个Bundle的Module，默认在View目录下生成 Request：**
+**4-2.指定一个Bundle，生成多个Model ：**
 ```
-php artisan bundle:make-request <RequestName> -b=<BundleName> -m=<ModuleName> -c=<a|v>
-```
-
-**7-2.指定一个Bundle的Module，-c (--cate)指定是在 a(ApiHttp) | v(ViewHttp) | r(Module) 下的Middleware目录下生成：**
-```
-php artisan bundle:make-request <RequestName> -b=<BundleName> -m=<ModuleName> -c=<a|v>
+php artisan bundle:make-model <ModelName> <ModelName> .... -b=<BundleName> 
 ```
 
-
-**8-1.指定一个Bundle的Module，生成单个Provider：**
+**4-3.指定一个Bundle，生成Model, -c (--cate)指定生成Model还是Repository { m (model) | r (repository) }：**
 ```
-php artisan bundle:make-provider <ProviderName> -b=<BundleName> -m=<ModuleName>
-```
-
-**8-2.指定一个Bundle的Module，生成多个Provider：**
-```
-php artisan bundle:make-provider <ProviderName> <ProviderName> ... -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-model <ModelName> -b=<BundleName> -c=<m|r>
 ```
 
-**9-1.指定一个Bundle的Module，生成单个Job：**
+**4-4.指定一个Bundle，-a (--all) 生成Model和Repository：**
 ```
-php artisan bundle:make-job <JobName> -b=<BundleName> -m=<ModuleName>
-```
-
-**9-2.指定一个Bundle的Module，生成单个Job：**
-```
-php artisan bundle:make-job <JobName> <JobName> ... -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-model <ModelName> -b=<BundleName> -a
 ```
 
-**10-1.指定一个Bundle下的服务，生成单个服务：**
+**4-5.指定一个Bundle，生成Model和Repository，-i (--id)指定Model的ID主键：**
+```
+php artisan bundle:make-model <ModelName> -b=<BundleName> -a -i=<ModelId>
+```
+
+**5-1.指定一个Bundle，默认在bundle目录下的Middleware生成单个Middleware ：**
+```
+php artisan bundle:make-middleware <MiddlewareName> -b=<BundleName>
+```
+
+**5-2.指定一个Bundle，默认在bundle目录下的Middleware生成多个Middleware ：**
+```
+php artisan bundle:make-middleware <MiddlewareName> <MiddlewareName> ... -b=<BundleName>
+```
+
+**5-3.指定一个Bundle，-c (--cate)指定是在 a(ApiHttp) | v(ViewHttp) | r(Bundle) 下的Middleware目录下生成：**
+```
+php artisan bundle:make-middleware <MiddlewareName> -b=<BundleName> -c=<a|v|r>
+```
+
+**6-1.指定一个Bundle，默认在View目录下的Request生成：**
+```
+php artisan bundle:make-request <RequestName> -b=<BundleName>
+```
+
+**6-2.指定一个Bundle，-c (--cate)指定是在 a(ApiHttp) | v(ViewHttp) 下的Request目录下生成：**
+```
+php artisan bundle:make-request <RequestName> -b=<BundleName> -c=<a|v>
+```
+
+**7-1.指定一个Bundle，生成单个Provider：**
+```
+php artisan bundle:make-provider <ProviderName> -b=<BundleName>
+```
+
+**7-2.指定一个Bundle，生成多个Provider：**
+```
+php artisan bundle:make-provider <ProviderName> <ProviderName> ... -b=<BundleName>
+```
+
+**8-1.指定一个Bundle，生成单个Job：**
+```
+php artisan bundle:make-job <JobName> -b=<BundleName>
+```
+
+**8-2.指定一个Bundle，生成多个Job：**
+```
+php artisan bundle:make-job <JobName> <JobName> ... -b=<BundleName>
+```
+
+**9-1.指定一个Bundle下的服务，生成单个服务：**
 ```
 php artisan bundle:make-service <ServiceName> -b=<BundleName>
 ```
 
-**10-2.指定一个Bundle下的Service，生成多个Service：**
+**9-2.指定一个Bundle下的Service，生成多个Service：**
 ```
 php artisan bundle:make-service <ServiceName> <ServiceName> ... -b=<BundleName>
 ```
 
-**11-1.指定一个Bundle的Module，生成单个Event：**
+**10-1.指定一个Bundle，生成单个Event：**
 ```
-php artisan bundle:make-event <EventName> -b=<BundleName> -m=<ModuleName>
-```
-
-**11-2.指定一个Bundle的Module，生成多个Event：**
-```
-php artisan bundle:make-event <EventName> <EventName> ... -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-event <EventName> -b=<BundleName>
 ```
 
-**12-1.指定一个Bundle的Module，生成单个Listener，-e (--event)需要Event名称或Event命名空间：**
+**10-2.指定一个Bundle，生成多个Event：**
 ```
-php artisan bundle:make-listener <ListenerName> -b=<BundleName> -m=<ModuleName> -e=<EventName>
-php artisan bundle:make-listener <ListenerName> -b=<BundleName> -m=<ModuleName> -e=<EventNamespace>
-```
-
-**13-1.指定一个Bundle的Module，生成在Module里注册的(Event+Listener)：**
-```
-php artisan bundle:generate-event
+php artisan bundle:make-event <EventName> <EventName> ... -b=<BundleName>
 ```
 
-**14-1.指定一个Bundle，所有Module的asset资源刷新生成asset资源到public下：**
+**11-1.指定一个Bundle，生成单个Listener，-e (--event)需要Event名称或Event命名空间：**
+```
+php artisan bundle:make-listener <ListenerName> -b=<BundleName> -e=<EventName>
+php artisan bundle:make-listener <ListenerName> -b=<BundleName> -e=<EventNamespace>
+```
+
+**12-1.指定一个Bundle，生成在<BundleName>Bundle.php里注册的(Event+Listener)：**
+```
+php artisan bundle:generate-event -b=<BundleName>
+```
+
+**13-1.指定一个Bundle的asset资源刷新生成asset资源到public下：**
 ```
 php artisan bundle:publish -b=<BundleName>
 ```
 
-**14-2.指定一个Bundle的Module的asset资源，刷新生成asset资源到public下：**
-```
-php artisan bundle:publish -b=<BundleName> -m=<ModuleName>
-```
-
-**15-1.指定一个Bundle，所有Module的lang资源刷新生成lang资源到resources/lang下：**
+**14-1.指定一个Bundle的lang资源刷新生成lang资源到resources/lang下：**
 ```
 php artisan bundle:publish-lang -b=<BundleName>
 ```
 
-**15-2.指定一个Bundle的Module的lang资源，刷新生成lang资源到resources/lang下：**
+**15-1.指定一个Bundle的migration资源刷新生成migration资源到databases/migration下：**
 ```
-php artisan bundle:publish-lang -b=<BundleName> -m=<ModuleName>
-```
-
-**16-1.指定一个Bundle，所有Module的migration资源刷新生成migration资源到databases/migration下：**
-```
-php artisan bundle:publish-migration -b=<BundleName> -m=<ModuleName>
+php artisan bundle:publish-migration -b=<BundleName>
 ```
 
-**16-2.指定一个Bundle的Module的migration资源，刷新生成migration资源到databases/migration下：**
+**16-1.指定一个Bundle，生成 create 操作的Migration：**
 ```
-php artisan bundle:publish-migration -b=<BundleName> -m=<ModuleName>
-```
-
-**17-1.指定一个Bundle的Module，生成 create 操作的Migration：**
-```
-php artisan bundle:make-migration create_<TABLE_NAME>_table -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-migration create_<TABLE_NAME>_table -b=<BundleName> 
 ```
 
-**17-2.指定一个Bundle的Module，生成 remove 操作的Migration：**
+**16-2.指定一个Bundle，生成 remove 操作的Migration：**
 ```
-php artisan bundle:make-migration remove_<COLUMN_NAME>_from_<TABLE_NAME>_table -b=<BundleName> -m=<ModuleName>
-```
-
-**17-3.指定一个Bundle的Module，生成 add 操作的Migration：**
-```
-php artisan bundle:make-migration add_<COLUMN_NAME>_to_<TABLE_NAME>_table -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-migration remove_<COLUMN_NAME>_from_<TABLE_NAME>_table -b=<BundleName> 
 ```
 
-**17-4.指定一个Bundle的Module，生成 drop 操作的Migration：**
+**16-3.指定一个Bundle，生成 add 操作的Migration：**
 ```
-php artisan bundle:make-migration drop_<TABLE_NAME>_table -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-migration add_<COLUMN_NAME>_to_<TABLE_NAME>_table -b=<BundleName> 
 ```
 
-**17-4.create/remove/add/drop...，后带字段参数时，字段之间用逗号 (,) 分隔：**
+**16-4.指定一个Bundle，生成 drop 操作的Migration：**
+```
+php artisan bundle:make-migration drop_<TABLE_NAME>_table -b=<BundleName>
+```
+
+**16-4.create/remove/add/drop...，后带字段参数时，字段之间用逗号 (,) 分隔：**
 ```
 ... -f="<COLUMN_NAME>:string, <COLUMN_NAME>:string"
 ```
 
-**17-5.指定一个Bundle的Module，生成对应操作的Migration，-f (--field)指定字段，多字段之间用 (,) 逗号相隔：**
+**16-5.指定一个Bundle，生成对应操作的Migration，-f (--field)指定字段，多字段之间用 (,) 逗号相隔：**
 ```
-php artisan bundle:make-migration <OPERATION_NAME>_<TABLE_NAME>_table -b=<BundleName> -m=<ModuleName>
-```
-
-**18-1.指定Bundle下的Module生成seeder，默认是生成'TableSeeder'：**
-```
-php artisan bundle:make-seed <SeedName> -b=<BundleName> -m=<ModuleName>
+php artisan bundle:make-migration <OPERATION_NAME>_<TABLE_NAME>_table -b=<BundleName>
 ```
 
-**18-2.指定Bundle下的Module生成seeder，-d 生成'DatabaseSeeder'：**
+**17-1.指定Bundle生成seeder，默认是生成'TableSeeder'：**
 ```
-php artisan bundle:make-seed <SeedName> -b=<BundleName> -m=<ModuleName> -d
+php artisan bundle:make-seed <SeedName> -b=<BundleName>
 ```
 
-**19-1.指定Bundle，执行migrate：**
+**17-2.指定Bundle生成seeder，-d 生成'DatabaseSeeder'：**
+```
+php artisan bundle:make-seed <SeedName> -b=<BundleName> -d
+```
+
+**18-1.指定Bundle，执行migrate：**
 ```
 php artisan bundle:migrate -b=<BundleName>
 ```
 
-**19-1.指定Bundle的Module，执行migrate：**
+**18-2.指定Bundle，执行migrate，可带与框架自带的一些参数：**
 ```
-php artisan bundle:migrate -b=<BundleName> -m=<ModuleName>
-```
-
-**19-3.指定Bundle的Module，执行migrate，可带与框架自带的一些参数：**
-```
-php artisan bundle:migrate -b=<BundleName> -m=<ModuleName> --database --pretend --force --seed
+php artisan bundle:migrate -b=<BundleName> --database --pretend --force --seed
 ```
 
-**20-1.指定Bundle，执行seed：**
+**19-1.指定Bundle，执行seed：**
 ```
 php artisan bundle:seed -b=<BundleName>
 ```
 
-**20-2.指定Bundle的Module，执行seed：**
+**19-2.指定Bundle，执行seed，可带与框架自带的一些参数：**
 ```
-php artisan bundle:seed -b=<BundleName> -m=<ModuleName>
-```
-
-**20-3.指定Bundle的Module，执行seed，可带与框架自带的一些参数：**
-```
-php artisan bundle:seed -b=<BundleName> -m=<ModuleName> --database --class
+php artisan bundle:seed -b=<BundleName> --database --class
 ```
 
-**21-1.指定Bundle，执行rollback：**
+**20-1.指定Bundle，执行rollback：**
 ```
 php artisan bundle:migrate-rollback -b=<BundleName>
 ```
 
-**21-2.指定Bundle的Module，执行rollback：**
-```
-php artisan bundle:migrate-rollback -b=<BundleName> -m=<ModuleName>
-```
-
-**22-1.指定Bundle，执行reset：**
+**21-1.指定Bundle，执行reset：**
 ```
 php artisan bundle:migrate-reset -b=<BundleName>
 ```
 
-**22-2.指定Bundle的Module，执行reset：**
-```
-php artisan bundle:migrate-reset -b=<BundleName> -m=<ModuleName>
-```
-
-**23-1.指定Bundle，执行refresh：**
+**22-1.指定Bundle，执行refresh：**
 ```
 php artisan bundle:migrate-refresh -b=<BundleName>
 ```
 
-**23-2.指定Bundle的Module，执行refresh：**
+**22-3.指定Bundle，执行refresh，与框架一些自带的参数：**
 ```
-php artisan bundle:migrate-refresh -b=<BundleName> -m=<ModuleName>
-```
-
-**23-3.指定Bundle的Module，执行refresh，与框架一些自带的参数：**
-```
-php artisan bundle:migrate-refresh -b=<BundleName> -m=<ModuleName> --database --force --seed
+php artisan bundle:migrate-refresh -b=<BundleName> --database --force --seed
 ```

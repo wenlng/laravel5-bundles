@@ -83,7 +83,6 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     public function boot()
     {
         $this->initializeBundles();
-        $this->initializeModules();
         $this->initializeServices();
         $this->booted = true;
         $this->use_time = (microtime(true) - (float)$this->start_time);
@@ -123,20 +122,11 @@ abstract class Kernel extends ToolExtend implements KernelInterface
                 ];
                 throw new BundleException($err);
             }
-
+            $bundle->initializeParam();
             $this->bundles[$_name] = $bundle;
         }
     }
 
-    /**
-     * 初始化模块
-     */
-    protected function initializeModules()
-    {
-        foreach ($this->bundles as $bundle) {
-            $bundle->initializeModules();
-        }
-    }
 
     /**
      * 初始化服务
@@ -155,27 +145,6 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     public function getBundles()
     {
         return $this->bundles;
-    }
-
-    /**
-     * 获取所有模块
-     * @return array
-     */
-    public function getModules()
-    {
-        if (empty($this->modules)) {
-            $_modules = [];
-            foreach ($this->bundles as $b_name => $bundle) {
-                $modules = $bundle->getModules();
-                foreach ($modules as $m_name => $module) {
-                    $key = $b_name . '.' . $m_name;
-                    $_modules[$key] = $module;
-                }
-            }
-            return ($this->modules = $_modules);
-        }
-
-        return $this->modules;
     }
 
     /**获取服务
@@ -227,12 +196,11 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     public function getEventFiles(){
         $event_files = [];
         foreach ($this->bundles as $bundle) {
-            $event_files = array_merge($event_files, $bundle->getEventFiles());
+            $key = $bundle->getLowerName();
+            $event_files[$key] = $bundle->getEventFiles();
         }
-
         return $event_files;
     }
-
 
     /**
      * 检查Bundle是否存在
@@ -259,35 +227,6 @@ abstract class Kernel extends ToolExtend implements KernelInterface
         return null;
     }
 
-    /**
-     * 检查模块是否存在
-     * @param $bundle
-     * @param $module
-     * @return mixed
-     */
-    public function hasModule($bundle, $module){
-        $_bundle = $this->snakeName($bundle);
-
-        if(!isset($this->bundles[$_bundle])) return false;
-
-        return $this->bundles[$_bundle]->hasModule($module);
-    }
-
-    /**
-     * 根据名字获取Module
-     * @param $bundle
-     * @param $name
-     * @return null
-     */
-    public function getModule($bundle, $name)
-    {
-        $_bundle = $this->snakeName($bundle);
-        if (isset($this->bundles[$_bundle])) {
-           return $this->bundles[$_bundle]->getModule($name);
-        }
-        return null;
-    }
-
     /**删除Bundle
      * @param $name
      * @return bool
@@ -296,6 +235,7 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     {
         $_name = $this->snakeName($name);
         if (isset($this->bundles[$_name])) {
+            $this->bundles[$_name]->delete();
             unset($this->bundles[$_name]);
         }
         return true;
@@ -315,39 +255,6 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     }
 
     /**
-     * 获取模块相关参数
-     * @param $bundle
-     * @param $name
-     * @return mixed|null
-     */
-    public function getModuleParam($bundle, $name){
-        $_bundle = $this->snakeName($bundle);
-        if (isset($this->bundles[$_bundle])) {
-            $module_param = $this->bundles[$_bundle]->getModuleParam($name, 'parameter');
-            return $module_param;
-        }
-
-        return null;
-    }
-
-    /**
-     * 获取模块注册相关
-     * @param $bundle
-     * @param $module
-     * @param $name
-     * @return null
-     */
-    public function getModuleRegisterParam($bundle, $module, $name){
-        $_bundle = $this->snakeName($bundle);
-        if (isset($this->bundles[$_bundle])) {
-            $module_param = $this->bundles[$_bundle]->getModuleParam($module, $name);
-            return $module_param;
-        }
-
-        return null;
-    }
-
-    /**
      * 获取当前pathName
      * @return mixed
      */
@@ -355,40 +262,25 @@ abstract class Kernel extends ToolExtend implements KernelInterface
         return basename($this->root_path);
     }
 
-    /**
-     * 获取当前Bundle
+    /**获取当前Bundle
      * @param $_this
      * @return mixed
+     * @throws BundleNotFoundException
      */
     public function getCurrentBundle($_this){
         $reflected = new \ReflectionObject($_this);
         $path = str_replace('\\', '/', dirname($reflected->getFileName()));
 
-        $pattern = '/.*\/'.$this->pathName().'\/(.*)\/Modules\/.*/';
+        $pattern = '/.*\/'.$this->pathName().'\/(.*?)\/.*/';
         if(preg_match($pattern, $path, $matches) && count($matches) > 1){
             return $this->getBundle($matches[1]);
         }
 
-        return null;
-    }
-
-    /**
-     * 获取当前Bundle
-     * @param $_this
-     * @return mixed|null
-     */
-    public function getCurrentModule($_this){
-        $reflected = new \ReflectionObject($_this);
-        $path = str_replace('\\', '/', dirname($reflected->getFileName()));
-
-        $pattern = '/.*\/'.$this->pathName().'\/(.*)\/Modules\/(.*)/';
-        if(preg_match($pattern, $path, $matches) && count($matches) > 2){
-            $bundle = $matches[1];
-            $module = substr($matches[2], 0 , stripos($matches[2], '/'));
-            return $this->getModule($bundle, $module);
-        }
-
-        return null;
+        $err = [
+            'en' => "Current bundle not get, Please keep [.../{$this->pathName()}/<BundleName>/...] directory format!",
+            'zh' => "当前bundle获取不到，请保持 [.../{$this->pathName()}/<BundleName>/...] 目录格式!"
+        ];
+        throw new BundleNotFoundException($err);
     }
 
     /**
@@ -398,4 +290,19 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     public function getUseTime(){
         return $this->use_time;
     }
+
+    /**
+     * 获取当前相关参数
+     * @param string $bundle
+     * @param string $name
+     * @return array
+     */
+    public function getRegisterParam($bundle, $name){
+        $_name = $this->snakeName($bundle);
+        if (isset($this->bundles[$_name])) {
+            return $this->bundles[$_name]->getRegisterParam($name);
+        }
+        return null;
+    }
+
 }

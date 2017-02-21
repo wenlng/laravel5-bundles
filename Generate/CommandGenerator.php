@@ -64,8 +64,8 @@ class CommandGenerator extends Generator
      */
     public function getPath()
     {
-        $module_path = $this->getModulePath();
-        $path = $module_path . '/' . $this->rootConfig('modules.generator.paths.command');
+        $bundle_path = $this->getBundlePath();
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.command');
         return str_replace('\\', '/', $path);
     }
 
@@ -85,7 +85,7 @@ class CommandGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('modules.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -138,8 +138,14 @@ class CommandGenerator extends Generator
     public function generate()
     {
         $bundle_name = $this->getBundleName();
-        $module_name = $this->getModuleName();
-        if(!$this->hasBundleOrModule($bundle_name, $module_name)) return;
+        if(empty($bundle_name)){
+            $this->console->error("Please appoint the bundle: -b BundleName!");
+            return ;
+        }
+        if (!$this->hasBundle()) {
+            $this->console->error("The bundle: [{$bundle_name}] not exist!");
+            return ;
+        }
 
         $name = $this->getName();
         $command = $name.$this->command_suffix;
@@ -152,11 +158,11 @@ class CommandGenerator extends Generator
 
         $command_name = $this->config('console_suffix') . '-' . $this->command_execute_name;
         $this->console->info("---------------------------------------------------------------------");
-        $this->console->info("| Please register command in bundle: [{$bundle_name}] to module: [{$module_name}]|");
+        $this->console->info("| Please register command in bundle: [{$bundle_name}] |");
         $this->console->info("| Then execute command: [{$command_name}] |");
         $this->console->info("---------------------------------------------------------------------");
 
-        $this->console->line("Command <info>[{$command}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> to module: <info>[{$module_name}]</info> ");
+        $this->console->line("Command <info>[{$command}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> </info> ");
     }
 
 
@@ -175,8 +181,8 @@ class CommandGenerator extends Generator
      */
     protected function getCommandNamespaceReplacement()
     {
-        $command = $this->rootConfig('modules.generator.paths.command');
-        return $this->getModuleCurrentNamespace() . '\\' . str_replace('/', '\\', $command);
+        $command = $this->rootConfig('generator.paths.command', true);
+        return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $command);
     }
 
     /**

@@ -42,7 +42,6 @@ class ModelCommand extends Command
             (new ModelGenerator($name))
                 ->setConsole($this)
                 ->setBundle($this->getTrimName($this->option('bundle')))
-                ->setModule($this->getTrimName($this->option('module')))
                 ->setCate($this->getTrimName($this->option('cate')))
                 ->setId($this->getTrimName($this->option('id')))
                 ->setAll($this->getTrimName($this->option('all')))
@@ -71,7 +70,6 @@ class ModelCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
             ['cate', 'c', InputOption::VALUE_OPTIONAL, '指定生成实体还是仓库，默认实体'],
             ['id', 'i', InputOption::VALUE_OPTIONAL, '实体ID'],
             ['all', 'a', InputOption::VALUE_NONE, '生成实体并生成仓库'],

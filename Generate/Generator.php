@@ -88,61 +88,14 @@ abstract class Generator extends ResourcesRepository
         $this->filesystem->put($path . '/.gitkeep', '');
     }
 
-
-    /**
-     * 获取Module命名
-     * @return string
-     */
-    public function getModuleNamespace(){
-        return $this->rootConfig('bundles.generator.paths.module');
-    }
-
-    /**
-     * 获取Module当前命名
-     * @return mixed
-     */
-    protected function getModuleCurrentNamespace()
-    {
-        $bas_namespace = str_replace('\\', '\\\\', $this->rootConfig('namespace'));
-        return $bas_namespace . '\\' . $this->getBundleName() .'\\'. $this->getModuleNamespace().'\\' .$this->getModuleName();
-    }
-
     /**
      * 获取Bundle当前命名
      * @return mixed
      */
     protected function getBundleCurrentNamespace()
     {
-        $bas_namespace = str_replace('\\', '\\\\', $this->rootConfig('namespace'));
-        return $bas_namespace . '\\' . $this->getBundleName();
+        return $this->rootConfig('namespace') . '\\' . $this->getBundleName();
     }
 
-    /**
-     * 检查Bundle与Module是否存在
-     * @param $bundle_name
-     * @param $module_name
-     * @return bool
-     */
-    protected function hasBundleOrModule($bundle_name, $module_name){
-        if(empty($bundle_name)){
-            $this->console->error("Please appoint the bundle: -b BundleName!");
-            return false;
-        }
-        if (!$this->hasBundle()) {
-            $this->console->error("The bundle: [{$bundle_name}] not exist!");
-            return false;
-        }
-
-        if(empty($module_name)){
-            $this->console->error("Please appoint the module: -m ModuleName!");
-            return false;
-        }
-        if (!$this->hasModule()) {
-            $this->console->error("The module: [{$module_name}] not exist!");
-            return false;
-        }
-
-        return true;
-    }
-
+    
 }

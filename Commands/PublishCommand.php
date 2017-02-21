@@ -34,9 +34,8 @@ class PublishCommand extends Command
     public function fire()
     {
         $bundle = $this->getTrimName($this->option('bundle'));
-        $module = $this->getTrimName($this->option('module'));
 
-        (new AssetPublisher($bundle, $module))
+        (new AssetPublisher($bundle))
             ->setConsole($this)
             ->publish();
     }
@@ -51,7 +50,6 @@ class PublishCommand extends Command
     {
         return [
             ['bundle', 'b', InputOption::VALUE_REQUIRED, '指定bundle'],
-            ['module', 'm', InputOption::VALUE_REQUIRED, '指定module'],
         ];
     }
 
