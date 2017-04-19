@@ -6,9 +6,7 @@ use Awen\Bundles\Routing\Controller;
 
 class %CONTROLLER_NAME% extends Controller {
 
-	public function index()
-	{
-		//return view();
-	}
-
+    public function index(){
+        //return view();
+    }
 }

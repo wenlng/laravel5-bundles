@@ -45,6 +45,13 @@ return [
         |--------------------------------------------------------------------------
         */
         'storage' => storage_path('bundles'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | 资源存储路径
+        |--------------------------------------------------------------------------
+        */
+        'resource' => resource_path('bundles')
     ],
 
     /*
@@ -69,13 +76,6 @@ return [
     'composer' => [
         'bundle' =>[
             'vendor' => 'awen-bundle',
-            'author' => [
-                'name' => 'name',
-                'email' => 'email@email.com',
-            ],
-        ],
-        'service' =>[
-            'vendor' => 'awen-bundle-service',
             'author' => [
                 'name' => 'name',
                 'email' => 'email@email.com',

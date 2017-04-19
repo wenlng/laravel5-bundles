@@ -14,7 +14,7 @@ To install through composer, simply put the following in your composer.json file
 ```json
 {
     "require": {
-        "awen/bundles": "~2.0.0"
+        "awen/bundles": "~2.1.0"
     }
 }
 ```
@@ -25,7 +25,7 @@ And then run `composer install` to fetch the package.
 
 或者 or
 ```
-composer require "awen/bundles:~2.0.0"
+composer require "awen/bundles:~2.1.0"
 ```
 
 
@@ -69,7 +69,7 @@ By default controllers, entities or repositories not loaded automatically. You c
 ## < Bundles开发目录结构 >
 ```
 bundles
-    ├── [Home|Admin|Wechat|Mobile|Api|...]
+    ├── [Home|Admin|Wechat|Mobile|Api|...]	//包名称
   	    ├── Assets/             //前端资源
   	    ├── Console/            //命令行
   	    ├── Database/           //数据库迁移控制
@@ -110,7 +110,7 @@ bundles
 
 ## 下载完成后开始使用  After the download is complete
 
-- [详细使用教程 (Detailed tutorial)  Url : http://www.lwgblog.com](http://www.lwgblog.com)
+- [详细使用教程 (Detailed tutorial)  Url : http://www.lwgblog.com](http://www.lwgblog.com)，正在录制路上
 - laravel技术交流群：178498936
 - 作者联系QQ：871024608
 
@@ -168,10 +168,20 @@ class IndexController extends Controller{
   }
 
   public function index(){
+	//------------第一种-----------------
     //获取服务形式下面详情讲
     $tool_service = $this->service->getService('home:tool');
     //执行服务里的类方法
     $tool_service->execute('pay.show');
+
+	//------------第二种-----------------
+	$payService = $this->service->getService('home:tool.pay');
+	$payService->show();
+
+	//------------第三种-----------------
+	//在ToolService.php的registerClassFiles()里的‘pay’服务添加一个 ‘main’=>true ;表示默认入口才会返回pay服务类，不配填写main默认返回service主服务类
+	$payService = $this->service->getService('home:tool');
+	$payService->show();
   }
 }
 ```
@@ -181,8 +191,10 @@ class IndexController extends Controller{
 1.注册格式
 ```
 '类名称' =>[
-   'class' => 类
-   'param' => 类里的构造参数，必须是数组
+	'class' => 类，
+	'param' => 类里的构造参数，必须是数组，
+	'scope' => public公开 / private私有
+	'main' => 是否设置为单一默认服务类，当它为true时scope必须为public
   ]
 ```
 2.param参数填写规则：
@@ -215,7 +227,9 @@ class StrClass{
 return [
   'str' =>[
    'class' => \Bundles\Home\Services\Tool\StrClass::class,
-   'param' => ['@pay', 'Awen']
+   'param' => ['@pay', 'Awen'],
+   //'scope' => 'public',  默认为public，此处可不写
+   //'main' => false，	默认为false，此处可不写
   ]
 ]
 ```
@@ -238,7 +252,7 @@ class IndexController extends Controller{
     $tool_service->execute('str.test');
 
     或者：
-    $tool_service_str = $this->service->getService('home:tool')->make('str');
+    $tool_service_str = $this->service->getService('home:tool.str');
     $tool_service_str->test();
   }
 }
@@ -398,6 +412,29 @@ $update = [
     'age' => 'new_20'
 ]
 ```
+
+
+
+### 九、跨包调用控制器的使用：
+```
+在controller里使用：
+	//比如注入Home包下的Service,Bundles\Home\Services\Service
+
+	protected $service;
+	public function __construct(Service $servic){
+		$this->service = $servic;
+	}
+
+	$this->service->renderController('test:index');	//调用test控制器的index
+	$this->service->renderController('pay.test:show');	//调用pay目录下的test控制器的index
+```
+
+```
+在视图里使用：
+	@inject('webService', 'Bundles\Home\Services\Service')
+    {!! $webService->renderController('test:index') !!}
+```
+
 
 
 ##
@@ -594,12 +631,16 @@ php artisan bundle:make-migration add_<COLUMN_NAME>_to_<TABLE_NAME>_table -b=<Bu
 php artisan bundle:make-migration drop_<TABLE_NAME>_table -b=<BundleName>
 ```
 
-**16-4.create/remove/add/drop...，后带字段参数时，字段之间用逗号 (,) 分隔：**
+**16-5.create/remove/add/drop，-f表示字段，字段之间用逗号 (,) 分隔：**
 ```
-... -f="<COLUMN_NAME>:string, <COLUMN_NAME>:string"
+php artisan bundle:make-migration create_<TABLE_NAME>_table -f="<COLUMN_NAME>:string, <COLUMN_NAME>:string" -b=<BundleName> -m=<ModuleName>
+
+php artisan bundle:make-migration add_<COLUMN_NAME>_to_<TABLE_NAME>_table -f="<COLUMN_NAME>:string:unique" -b=<BundleName> -m=<ModuleName>
+
+php artisan bundle:make-migration remove_<COLUMN_NAME>_from_<TABLE_NAME>_table -f="<COLUMN_NAME>:string:unique" -b=<BundleName> -m=<ModuleName>
 ```
 
-**16-5.指定一个Bundle，生成对应操作的Migration，-f (--field)指定字段，多字段之间用 (,) 逗号相隔：**
+**16-6.指定一个Bundle，生成对应操作的Migration，-f (--field)指定字段，多字段之间用 (,) 逗号相隔：**
 ```
 php artisan bundle:make-migration <OPERATION_NAME>_<TABLE_NAME>_table -b=<BundleName>
 ```

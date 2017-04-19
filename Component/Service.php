@@ -71,6 +71,19 @@ abstract class Service extends ToolExtend implements ServiceInterface
         $this->app_kernel = $bootstrap->isBootKernel() ? $bootstrap->getKernel() : null;
     }
 
+    /**检查权限是否公开的
+     * @param $class
+     * @return bool
+     */
+    private function checkScopePublic($class){
+        $_class = $this->snakeName($class);
+        if(isset($this->class_files[$_class]['scope']) && $this->class_files[$_class]['scope'] == 'private'){
+            return false;
+        }
+        return true;
+    }
+
+
     /**
      * 创建一个类
      * @param $class
@@ -94,6 +107,14 @@ abstract class Service extends ToolExtend implements ServiceInterface
             throw new ServiceNotFoundException($err);
         }
 
+        if(!$this->checkScopePublic($class)){
+            $err = [
+                'en' => "[{$class}] This service class is not public!",
+                'zh' => "[{$class}] 此服务类不是公开!"
+            ];
+            throw new ServiceNotFoundException($err);
+        }
+
         $service = $this->makeClass($this->class_files[$_class], $class);
         if (!is_null($service)) return $service;
 
@@ -102,6 +123,25 @@ abstract class Service extends ToolExtend implements ServiceInterface
             'zh' => "[{$class}] 执行服务类失败!"
         ];
         throw new ServiceException($err);
+    }
+
+    /**找默认服务
+     * @param bool $reset
+     * @return mixed|object
+     * @throws ServiceException
+     * @throws ServiceNotFoundException
+     */
+    public function makeMain($reset = false){
+        $mainClass = null;
+        foreach($this->class_files as $key => $item){
+            if(isset($item['main']) && $item['main']) $mainClass = $key;
+        }
+
+        if(!is_null($mainClass)) {
+            return $this->make($mainClass, $reset);
+        }
+
+        return null;
     }
 
     /**
@@ -238,6 +278,22 @@ abstract class Service extends ToolExtend implements ServiceInterface
                     ];
                     throw new ServiceException($err);
                 }
+
+                if((isset($_class['main']) && $_class['main']) && isset($class_param['main']) && $class_param['main']){
+                    $err = [
+                        'en' => "[{$name}] The service class allows only a single default entry!",
+                        'zh' => "[{$name}] 服务类只允许单个默认入口!"
+                    ];
+                    throw new ServiceException($err);
+                }
+            }
+
+            if((isset($_class['main']) && $_class['main']) && (isset($_class['scope']) && $_class['scope'] != 'public')){
+                $err = [
+                    'en' => "[{$name}] The service class allows only a single default entry!",
+                    'zh' => "[{$name}] 服务类设置了单一默认入口，该类必须是公开的!"
+                ];
+                throw new ServiceException($err);
             }
 
             $this->class_files[$_name] = $class_param;
@@ -367,7 +423,7 @@ abstract class Service extends ToolExtend implements ServiceInterface
         $constructor = $_class->getConstructor();
         if(!is_null($constructor)){
             $parameters = $constructor->getParameters();
-            foreach ($parameters as $pa){
+            foreach ($parameters as $key => $pa){
                 $paramStr = $pa->__toString();
                 $pattern = '/Parameter #[\d]+ .*?\[ <required> (.*?) \]/is';
                 preg_match($pattern, $paramStr, $result);
@@ -376,13 +432,17 @@ abstract class Service extends ToolExtend implements ServiceInterface
                 $classStr = $result[1];
                 $paramClass = trim(str_replace(' $'.$pa->getName(), '', $classStr));
 
-                if(!class_exists($paramClass)) continue;
+                if($this->app->offsetExists($paramClass)){
+                    $param[$pa->getPosition()] = $this->app->offsetGet($paramClass);
+                    continue;
+                }
 
+                if(!class_exists($paramClass)) continue;
                 $ServiceClass = new \ReflectionClass($paramClass);
                 $isTo = false;
                 foreach($ServiceClass->getInterfaceNames() as $interface){
                     if($interface === 'Awen\Bundles\Contracts\ServiceKernelInterface') $isTo = true;
-                    
+
                     if($interface === 'Awen\Bundles\Contracts\RepositoryInterface') $isTo = true;
                 }
 
