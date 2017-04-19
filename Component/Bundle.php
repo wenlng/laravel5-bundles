@@ -134,7 +134,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      */
     protected $consoles = [];
 
-    
+
     public function __construct(Application $app, Kernel $kernel, $name)
     {
         $this->app = $app;
@@ -170,11 +170,12 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     /**
      * 初始化服务
      */
-    public function initializeServices(){
+    public function initializeServices()
+    {
         $class = $this->registerServices();
-        if(empty($class)) return;
+        if (empty($class)) return;
 
-        if(!class_exists($class)){
+        if (!class_exists($class)) {
             $err = [
                 'en' => "[{$class}] This service non existent!",
                 'zh' => "[{$class}] 这个服务类不存在!"
@@ -184,7 +185,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
 
         $this->app->singleton($class);
         $services = $class::registerServices();
-        foreach ($services as $name => $service){
+        foreach ($services as $name => $service) {
             if (!isset($service['class']) || !isset($service['config'])) {
                 $err = [
                     'en' => "[{$name}] Register service class related parameters have problems!",
@@ -193,7 +194,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
                 throw new ServiceException($err);
             }
 
-            if(!class_exists($service['class'])){
+            if (!class_exists($service['class'])) {
                 $err = [
                     'en' => "[{$service['class']}] This service class file non existent!",
                     'zh' => "[{$service['class']}] 这个服务类文件不存在!"
@@ -251,7 +252,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     {
         $loader = AliasLoader::getInstance();
         foreach ($this->getArrDefault($this->registerClassAliases(), []) as $aliasName => $aliasClass) {
-            if(array_key_exists($aliasName, $loader->getAliases())){
+            if (array_key_exists($aliasName, $loader->getAliases())) {
                 $err = [
                     'en' => "[{$aliasName}] Attempting to register two identical names of the alias!",
                     'zh' => "[{$aliasName}] 试图注册两个名称相同的别名!"
@@ -267,7 +268,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * @param $name
      * @return mixed
      */
-    private function getServiceProviderName($name){
+    private function getServiceProviderName($name)
+    {
         $bas_name = str_replace('ServiceProvider', '', $name);
         return strtolower($bas_name);
     }
@@ -278,14 +280,13 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     protected function registerProviders()
     {
         $namespace = $this->getDefaultParam('namespace', '');
-        $bundle_provider = $namespace. '\\' . $this->getDefaultParam('provider', '');
+        $bundle_provider = $namespace . '\\' . $this->getDefaultParam('provider', '');
 
         $this->app->register($bundle_provider);
         $name = $this->getServiceProviderName($this->getNamespaceName($bundle_provider));
         $this->providers[$name] = $bundle_provider;
 
-        foreach ($this->getArrDefault($this->registerProviderFiles(), []) as $name) {
-            $provider = $namespace. '\\' .$name;
+        foreach ($this->getArrDefault($this->registerProviderFiles(), []) as $provider) {
             $this->app->register($provider);
             $key = $this->getServiceProviderName($this->getNamespaceName($provider));
             $this->providers[$key] = $provider;
@@ -298,7 +299,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     protected function registerRoute()
     {
         foreach ($this->getArrDefault($this->registerRouteFiles(), []) as $name => $route) {
-            if(!isset($route['route_file']) || !is_file($route['route_file']) || !isset($route['route_file'])){
+            if (!isset($route['route_file']) || !is_file($route['route_file']) || !isset($route['route_file'])) {
                 $err = [
                     'en' => "[{$name}] There is a problem with this routing configuration, please check!",
                     'zh' => "[{$name}] 此路由配置有问题，请检查!"
@@ -306,7 +307,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
                 throw new BundleException($err);
             }
 
-            $this->router->group($this->getArrDefault($route['group_params'],[]), function ($router) use ($route) {
+            $this->router->group($this->getArrDefault($route['group_params'], []), function ($router) use ($route) {
                 require $route['route_file'];
             });
 
@@ -317,25 +318,26 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     /**
      * 注册中间件
      */
-    protected function registerMiddleware(){
+    protected function registerMiddleware()
+    {
         $middleware = $this->registerMiddlewareFiles();
-        foreach ($this->getArrDefault($middleware['route'],[]) as $name => $class) {
+        foreach ($this->getArrDefault($middleware['route'], []) as $name => $class) {
             $this->router->middleware($name, $class);
             $this->route_middleware[$name] = $class;
         }
 
         foreach ($this->getArrDefault($middleware['groups'], []) as $name => $class) {
-            if('web' == $name || 'api' == $name){
-                if (is_array($class)){
-                    foreach ($class as $sub_class){
+            if ('web' == $name || 'api' == $name) {
+                if (is_array($class)) {
+                    foreach ($class as $sub_class) {
                         $this->router->pushMiddlewareToGroup($name, $sub_class);
                         $this->groups_middleware[$name][] = $sub_class;
                     }
-                }else{
+                } else {
                     $this->router->pushMiddlewareToGroup($name, $class);
                     $this->groups_middleware[$name] = $class;
                 }
-            }else{
+            } else {
                 $this->router->middlewareGroup($name, $class);
                 $this->groups_middleware[$name] = $class;
             }
@@ -345,8 +347,9 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     /**
      * 注册中间件
      */
-    protected function registerEvents(){
-        foreach ($this->getArrDefault($this->registerEventFiles(),[]) as $event => $listeners) {
+    protected function registerEvents()
+    {
+        foreach ($this->getArrDefault($this->registerEventFiles(), []) as $event => $listeners) {
             foreach ($listeners as $listener) {
                 $this->event->listen($event, $listener);
             }
@@ -357,17 +360,20 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     /**
      * 注册Subscribe
      */
-    protected function registerSubscribes(){
-        foreach ($this->getArrDefault($this->registerSubscribeFiles(),[]) as $subscriber) {
+    protected function registerSubscribes()
+    {
+        foreach ($this->getArrDefault($this->registerSubscribeFiles(), []) as $subscriber) {
             $this->event->subscribe($subscriber);
             $this->subscribes[] = $subscriber;
         }
     }
+
     /**获取命令名
      * @param $name
      * @return mixed
      */
-    private function getCommandName($name){
+    private function getCommandName($name)
+    {
         $bas_name = str_replace('Command', '', $name);
         return strtolower($bas_name);
     }
@@ -375,8 +381,9 @@ abstract class Bundle extends ToolExtend implements BundleInterface
     /**
      * 注册命令行
      */
-    protected function registerConsoles(){
-        foreach ($this->getArrDefault($this->registerConsoleFiles(),[]) as $command) {
+    protected function registerConsoles()
+    {
+        foreach ($this->getArrDefault($this->registerConsoleFiles(), []) as $command) {
             $this->event->listen(ArtisanStarting::class, function ($event) use ($command) {
                 $event->artisan->resolveCommands($command);
 
@@ -427,7 +434,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * @param string $name
      * @return array
      */
-    public function getRegisterParam($name){
+    public function getRegisterParam($name)
+    {
         $public_param = [
             'path',
             'name',
@@ -442,7 +450,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
             'consoles',
         ];
 
-        if(!property_exists($this, $name) || !in_array($name, $public_param)){
+        if (!property_exists($this, $name) || !in_array($name, $public_param)) {
             return [];
         }
 
@@ -453,7 +461,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * 获取所有EventFiles
      * @return array
      */
-    public function getEventFiles(){
+    public function getEventFiles()
+    {
         return $this->getRegisterParam('events');
     }
 
@@ -461,7 +470,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * 获取所有服务
      * @return array
      */
-    public function getServices(){
+    public function getServices()
+    {
         return $this->services;
     }
 
@@ -473,11 +483,12 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * @throws ServiceException
      * @throws ServiceNotFoundException
      */
-    public function makeService($b_name, $s_name){
+    public function makeService($b_name, $s_name)
+    {
         $_b_name = $this->snakeName($b_name);
         $_s_name = $this->snakeName($s_name);
 
-        if(!isset($this->services[$_b_name]) || !isset($this->services[$_b_name][$_s_name])){
+        if (!isset($this->services[$_b_name]) || !isset($this->services[$_b_name][$_s_name])) {
             $err = [
                 'en' => "[{$s_name}] Can't find this service in the [{$b_name}] Bundle!",
                 'zh' => "[{$s_name}] 在 [{$b_name}] 的 Bundle 里找不到这个服务!"
@@ -493,13 +504,13 @@ abstract class Bundle extends ToolExtend implements BundleInterface
             'service_config' => []
         ];
 
-        if(isset($this->services[$_b_name][$_s_name]['class']))
+        if (isset($this->services[$_b_name][$_s_name]['class']))
             $class = $this->services[$_b_name][$_s_name]['class'];
 
-        if(isset($this->services[$_b_name][$_s_name]['config']))
+        if (isset($this->services[$_b_name][$_s_name]['config']))
             $config = $this->services[$_b_name][$_s_name]['config'];
 
-        if(is_null($class)){
+        if (is_null($class)) {
             $err = [
                 'en' => "[{$class}] This service cannot be empty and must be a service class!",
                 'zh' => "[{$class}] 此服务不能为空，必须是一个服务类!"
@@ -519,8 +530,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
             throw new ServiceException($err);
         }
 
-        if(!is_null($config)){
-            if(!is_file($config) || !file_exists($config)){
+        if (!is_null($config)) {
+            if (!is_file($config) || !file_exists($config)) {
                 $err = [
                     'en' => "[{$config}] The configuration of this service file must be a valid file!",
                     'zh' => "[{$config}] 此服务的配置文件必须是一个有效的文件!"
@@ -530,7 +541,7 @@ abstract class Bundle extends ToolExtend implements BundleInterface
 
             //处理配置文件
             $config_arr = require $config;
-            if(!is_array($config_arr)){
+            if (!is_array($config_arr)) {
                 $err = [
                     'en' => "[{$config}] The configuration of this service must be a valid array!",
                     'zh' => "[{$config}] 此服务的配置必须是一个有效的文件!"
@@ -552,7 +563,8 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * 删除当前实体Bundle
      * @return bool
      */
-    public function delete(){
+    public function delete()
+    {
         $this->kernel->deleteBundle($this->getName());
         return $this->filesystem->deleteDirectory($this->getPath(), true);
     }
@@ -561,24 +573,25 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * 获取参数
      * @return array
      */
-    public function getParam(){
+    public function getParam()
+    {
         return [
             'path' => $this->path,
             'name' => $this->name,
         ];
     }
 
-
     /**
      * 获取模块storage路径
      * @param $name
      * @return string|null
      */
-    public function getStoragePath($name = ''){
-        $storage_path = $this->config->get('bundles.paths.storage') .'/'. $this->getLowerName() .'/'.$name;
-        if(!is_dir($storage_path)) $this->filesystem->makeDirectory($storage_path, 0755, true);
+    public function getStoragePath($name = '')
+    {
+        $storage_path = $this->config->get('bundles.paths.storage') . '/' . $this->getLowerName();
+        if (!is_dir($storage_path)) $this->filesystem->makeDirectory($storage_path, 0755, true);
 
-        return $storage_path;
+        return $storage_path . '/' . $name;
     }
 
     /**
@@ -586,8 +599,9 @@ abstract class Bundle extends ToolExtend implements BundleInterface
      * @param $name
      * @return string|null
      */
-    public function getAssetUrl($name = ''){
-        $storage_path = str_replace(public_path(), '', $this->config->get('bundles.paths.assets')) . '/' . $this->getLowerName(). '/'.  $name;
+    public function getAssetUrl($name = '')
+    {
+        $storage_path = str_replace(public_path(), '', $this->config->get('bundles.paths.assets')) . '/' . $this->getLowerName() . '/' . $name;
 
         return asset(trim($storage_path, '\,/'));
     }

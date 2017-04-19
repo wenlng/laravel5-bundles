@@ -13,7 +13,11 @@ class %SERVICE_CLASS_NAME% extends Service
     public function registerClassFiles()
     {
         return [
-            //...
+            /*
+            'test' =>[
+                'class' => \%SERVICE_CLASS_NAMESPACE%\Core\TestClass::class,
+                'param' => [ ]
+            ]*/
         ];
     }
 }

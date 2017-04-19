@@ -49,7 +49,7 @@ class ServiceGenerator extends Generator
     public function getPath()
     {
         $bundle_path = $this->getBundlePath();
-        $path = $bundle_path . '/' . $this->rootConfig('bundles.generator.paths.service') .'/' . $this->getName();
+        $path = $bundle_path . '/' . $this->rootConfig('generator.paths.service') .'/' . $this->getName();
 
         return str_replace('\\', '/', $path);
     }
@@ -70,7 +70,7 @@ class ServiceGenerator extends Generator
      */
     protected function getReplacement($stub)
     {
-        $replacements = $this->rootConfig('bundles.replacements');
+        $replacements = $this->rootConfig('replacements');
         return $this->_getReplacement($stub, $replacements);
     }
 
@@ -81,8 +81,12 @@ class ServiceGenerator extends Generator
     {
         $files = [
             'service_class' => $this->getPath(). '/' . $this->getName() . $this->service_suffix . '.php',
-            'service_config' => $this->getPath() .'/Config/config.php',
-            'service_composer' => $this->getPath(). '/' . 'composer.json'
+            'service_config' => $this->getPath() .'/Config/config.php'
+        ];
+
+        $dirs = [
+            $this->getPath() .'/Core',
+            $this->getPath() .'/Exceptions',
         ];
 
         foreach ($files as $stub => $file){
@@ -94,6 +98,13 @@ class ServiceGenerator extends Generator
                 $this->filesystem->put($file, $this->getStubContents($stub));
             }
             $this->console->info("Created : {$file}");
+        }
+
+        foreach ($dirs as $dir){
+            if (!$this->filesystem->isDirectory($dir)) {
+                $this->filesystem->makeDirectory($dir, 0775, true);
+            }
+            $this->console->info("Created : {$dir}");
         }
     }
 
@@ -107,18 +118,6 @@ class ServiceGenerator extends Generator
         if (file_exists($service)) return true;
         return false;
     }
-
-    /**
-     * 提示输入作者信息
-     */
-    public function inputAuthorInfo(){
-        $default_name = $this->config('composer.service.author.name') ?: 'name';
-        $default_email = $this->config('composer.service.author.email') ?: 'email';
-
-        $this->author_name = $this->console->ask("Please input author name: ", $default_name);
-        $this->author_email = $this->console->ask("Please input author email: ", $default_email);
-    }
-
 
     /**
      * 生成Controller文件
@@ -138,7 +137,6 @@ class ServiceGenerator extends Generator
             return;
         }
 
-        $this->inputAuthorInfo();
         $this->generateFiles();
 
         $this->console->line("Service <info>[{$service}]</info> created successfully in bundle: <info>[{$bundle_name}]</info> ");
@@ -159,7 +157,7 @@ class ServiceGenerator extends Generator
      */
     protected function getServiceClassNamespaceReplacement()
     {
-        $service= $this->rootConfig('bundles.generator.paths.service');
+        $service= $this->rootConfig('generator.paths.service');
 
         return $this->getBundleCurrentNamespace() . '\\' . str_replace('/', '\\', $service) . '\\' . $this->getName();
     }

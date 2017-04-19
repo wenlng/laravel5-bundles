@@ -11,7 +11,10 @@ class %SERVICE_NAME% extends ServiceKernel
     */
     static public function registerServices(){
         return [
-            //...
+            /*'test' => [
+                'class' => \%BUNDLE_NAMESPACE%\%SERVICE_NAMESPACE%\Test\TestService::class,
+                'config' => __DIR__ . '/Test/Config/config.php'
+            ]*/
         ];
     }
 

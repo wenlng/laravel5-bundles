@@ -13,8 +13,10 @@ use Awen\Bundles\Exceptions\BundleException;
 use Awen\Bundles\Contracts\BundleInterface;
 use Awen\Bundles\Contracts\KernelInterface;
 use Awen\Bundles\Exceptions\BundleNotFoundException;
+use Awen\Bundles\Exceptions\ServiceNotFoundException;
 use Awen\Bundles\Extensions\ToolExtend;
 use Illuminate\Foundation\Application;
+use Illuminate\Config\Repository;
 
 abstract class Kernel extends ToolExtend implements KernelInterface
 {
@@ -25,10 +27,9 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     protected $bundles = [];
 
     /**
-     * 全部模块
-     * @var array
+     * @var Repository
      */
-    protected $modules = [];
+    private $config;
 
     /**
      * 全部服务实例
@@ -58,7 +59,7 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * 当前path
      * @var bool
      */
-    protected $root_path = false;
+    protected $root_path;
 
     /**
      * 版本
@@ -74,6 +75,7 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     {
         $this->app = $app;
         $this->root_path = $root_path;
+        $this->config = $app['config'];
         $this->start_time = microtime(true);
     }
 
@@ -150,17 +152,20 @@ abstract class Kernel extends ToolExtend implements KernelInterface
     /**获取服务
      * @param $name
      * @param $reset
-     * @return mixed|null
-     * @throws BundleNotFoundException
+     * @return mixed
      * @throws BundleException
+     * @throws BundleNotFoundException
+     * @throws ServiceNotFoundException
      */
     public function getService($name, $reset)
     {
-        $param = explode(':', $name);
-        if(count($param) != 2){
+        $separate = explode('.', $name);
+
+        $param = explode(':', $separate[0]);
+        if (count($param) != 2) {
             $err = [
-                'en' =>"[{$name}] Get service format error, Please get registered service with 'BundleName:ServiceName'!",
-                'zh' =>"[{$name}] 获取服务格式错误，请以 'BundleName:ServiceName' 获取注册的服务!"
+                'en' => "[{$name}] Get service format error, Please get registered service with 'BundleName:ServiceName'!",
+                'zh' => "[{$name}] 获取服务格式错误，请以 'BundleName:ServiceName' 获取注册的服务!"
             ];
             throw new BundleException($err);
         }
@@ -168,32 +173,55 @@ abstract class Kernel extends ToolExtend implements KernelInterface
         $_b_name = $this->snakeName($b_name);
         $_s_name = $this->snakeName($s_name);
 
-        $key = $_b_name. ':' . $_s_name;
+        $key = $_b_name . ':' . $_s_name;
         if (isset($this->services[$key]) && !$reset) {
-            return $this->services[$key];
+            $service = $this->services[$key];
+            if (count($separate) == 2){
+                $service = $this->services[$key]->make($separate[1] ,$reset);
+            }else{
+                $_service = $this->services[$key]->makeMain($reset);
+                if(!is_null($_service)) $service = $_service;
+            }
+
+            return $service;
         }
 
-        if(!isset($this->bundles[$_b_name])){
+        if (!isset($this->bundles[$_b_name])) {
             $err = [
-                'en' =>"[{$name}] Can't find this bundle!",
-                'zh' =>"[{$name}] 找不到这个 Bundle!"
+                'en' => "[{$name}] Can't find this bundle!",
+                'zh' => "[{$name}] 找不到这个 Bundle!"
             ];
             throw new BundleNotFoundException($err);
         }
 
         $service = $this->bundles[$_b_name]->makeService($_b_name, $_s_name);
         if (!is_null($service)) {
-            return $this->services[$key] = $service;
+            $this->services[$key] = $service;
+
+            $service = $this->services[$key];
+            if (count($separate) == 2){
+                $service = $this->services[$key]->make($separate[1] ,$reset);
+            }else{
+                $_service = $this->services[$key]->makeMain($reset);
+                if(!is_null($_service)) $service = $_service;
+            }
+
+            return $service;
         }
 
-        return null;
+        $err = [
+            'en' => "[{$name}] Failed to get service!",
+            'zh' => "[{$name}] 获取服务失败!"
+        ];
+        throw new ServiceNotFoundException($err);
     }
 
     /**
      * 获取所有Listen
      * @return array
      */
-    public function getEventFiles(){
+    public function getEventFiles()
+    {
         $event_files = [];
         foreach ($this->bundles as $bundle) {
             $key = $bundle->getLowerName();
@@ -246,7 +274,8 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * @param $name
      * @return null
      */
-    public function getBundleParam($name){
+    public function getBundleParam($name)
+    {
         $_name = $this->snakeName($name);
         if (isset($this->bundles[$_name])) {
             return $this->bundles[$_name]->getParam();
@@ -258,7 +287,8 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * 获取当前pathName
      * @return mixed
      */
-    public function pathName(){
+    public function pathName()
+    {
         return basename($this->root_path);
     }
 
@@ -267,12 +297,13 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * @return mixed
      * @throws BundleNotFoundException
      */
-    public function getCurrentBundle($_this){
+    public function getCurrentBundle($_this)
+    {
         $reflected = new \ReflectionObject($_this);
         $path = str_replace('\\', '/', dirname($reflected->getFileName()));
 
-        $pattern = '/.*\/'.$this->pathName().'\/(.*?)\/.*/';
-        if(preg_match($pattern, $path, $matches) && count($matches) > 1){
+        $pattern = '/.*\/' . $this->pathName() . '\/(.*?)\/.*/';
+        if (preg_match($pattern, $path, $matches) && count($matches) > 1) {
             return $this->getBundle($matches[1]);
         }
 
@@ -287,7 +318,8 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * 获取使用的时间
      * @return float
      */
-    public function getUseTime(){
+    public function getUseTime()
+    {
         return $this->use_time;
     }
 
@@ -297,12 +329,46 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * @param string $name
      * @return array
      */
-    public function getRegisterParam($bundle, $name){
+    public function getRegisterParam($bundle, $name)
+    {
         $_name = $this->snakeName($bundle);
         if (isset($this->bundles[$_name])) {
             return $this->bundles[$_name]->getRegisterParam($name);
         }
         return null;
+    }
+
+    /**
+     * 获取模块storage路径
+     * @param $name
+     * @return string|null
+     */
+    public function getStoragePath($name = '')
+    {
+        $storage_path = $this->config->get('bundles.paths.storage') . '/' . $name;
+        return $storage_path;
+    }
+
+    /**
+     * 获取模块asset路径
+     * @param $name
+     * @return string|null
+     */
+    public function getAssetUrl($name = '')
+    {
+        $storage_path = str_replace(public_path(), '', $this->config->get('bundles.paths.assets')) . '/' . $name;
+
+        return asset(trim($storage_path, '\,/'));
+    }
+
+    /**
+     * @param $callback
+     * @param array $parameters
+     * @param null $defaultMethod
+     * @return mixed
+     */
+    public function call($callback, array $parameters = [], $defaultMethod = null){
+        return $this->app->call($callback, $parameters, $defaultMethod);
     }
 
 }

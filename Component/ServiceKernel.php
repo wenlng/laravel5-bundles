@@ -11,6 +11,7 @@ namespace Awen\Bundles\Component;
 
 use Awen\Bundles\Contracts\ServiceKernelInterface;
 use Awen\Bundles\Exceptions\BundleException;
+use Illuminate\Config\Repository;
 use Illuminate\Foundation\Application;
 
 abstract class ServiceKernel implements ServiceKernelInterface
@@ -25,9 +26,15 @@ abstract class ServiceKernel implements ServiceKernelInterface
      */
     private $app_kernel;
 
+    /**
+     * @var Repository
+     */
+    private $config;
+
     public function __construct()
     {
         $this->app = Application::getInstance();
+        $this->config = $this->app['config'];
         $bootstrap = $this->app['bundles'];
         $this->app_kernel = $bootstrap->isBootKernel() ? $bootstrap->getKernel() : null ;
     }
@@ -56,6 +63,59 @@ abstract class ServiceKernel implements ServiceKernelInterface
         }
 
         return $service;
+    }
+
+    /**
+     * 运行当前服务所在的Controller
+     * @param $controller
+     * @param array $param
+     * @param string $cate
+     * @return mixed
+     */
+    public function renderController($controller, array $param = [], $cate = 'view'){
+        $con = explode('.', $controller);
+        array_walk($con, function(&$v){$v = ucfirst($v);});
+        $namespace = str_replace(':', 'Controller@', implode('\\',$con));
+
+        //当前命名空间
+        $service_name = [
+            class_basename(get_class($this)),
+            $this->config->get('bundles.root.generator.paths.service')
+        ];
+        $bundle = explode('\\', get_class($this));
+        array_walk($bundle, function(&$v) use($service_name) {
+            if(in_array($v, $service_name)){
+                $v = '';
+            }
+        });
+        $bundleNamespace = implode('\\', array_filter($bundle));
+
+        //分类命名空间
+        if($cate === 'view'){
+            $appointNamespace = $this->config->get('bundles.root.generator.paths.view_controller');
+        }else{
+            $appointNamespace = $this->config->get('bundles.root.generator.paths.api_controller');
+        }
+
+        $controllerNamespace = $bundleNamespace. '\\'. str_replace('/', '\\', $appointNamespace).'\\' . $namespace;
+
+        if(!is_null($this->app_kernel)){
+            $result = $this->app_kernel->call($controllerNamespace, $param);
+            return $result->render();
+        }
+
+        return null;
+    }
+
+    /**
+     * 获取Bundle名称
+     * @param $bundle
+     * @return mixed
+     */
+    public function getBundleName($bundle = null){
+        if(is_null($bundle)) return $this->app_kernel->getCurrentBundle($this)->getName();
+
+        return $this->app_kernel->getBundle($bundle)->getName();
     }
 
 }

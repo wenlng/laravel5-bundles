@@ -53,7 +53,7 @@ class %BUNDLE_NAME% extends Bundle
                     \Illuminate\View\Middleware\ShareErrorsFromSession::class,
 
                     //默认自带,cookie加密排除与Form安全验证排除
-                    \%BUNDLE_NAMESPACE%\Middleware\EncryptCookies::class,
+                    //\%BUNDLE_NAMESPACE%\Middleware\EncryptCookies::class,
                     \%BUNDLE_NAMESPACE%\Middleware\VerifyCsrfToken::class,
 
                     //开发者

@@ -116,21 +116,29 @@ class Controller extends BaseController implements ControllerInterface
 
     /**
      * 获取模块storage路径  getStoragePathPrefix
-     * @param $name
-     * @return string|null
+     * @param string $name
+     * @param bool $outside
+     * @return mixed
      */
-    public function getStoragePath($name = ''){
+    public function getStoragePath($name = '', $outside = false){
         if(!$this->is_init) $this->init();
+
+        if($outside) return $this->app_kernel->getStoragePath($name);
+
         return $this->getCurrentBundle()->getStoragePath($name);
     }
 
     /**
      * 获取模块asset路径  getAssetUrlPrefix
      * @param $name
+     * @param bool $outside
      * @return string|null
      */
-    public function getAssetUrl($name = ''){
+    public function getAssetUrl($name = '', $outside = false){
         if(!$this->is_init) $this->init();
+
+        if($outside) return $this->app_kernel->getAssetUrl($name);
+
         return $this->getCurrentBundle()->getAssetUrl($name);
     }
 
@@ -155,6 +163,20 @@ class Controller extends BaseController implements ControllerInterface
         if(!$this->is_init) $this->init();
 
         return $this->app_kernel->hasBundle($bundle);
+    }
+
+    /**
+     * 获取Bundle名称
+     * @param $bundle
+     * @return mixed
+     */
+    public function getBundleName($bundle = null)
+    {
+        if(!$this->is_init) $this->init();
+
+        if(is_null($bundle)) return $this->getCurrentBundle()->getName();
+
+        return $this->getBundle($bundle)->getName();
     }
 
     /**

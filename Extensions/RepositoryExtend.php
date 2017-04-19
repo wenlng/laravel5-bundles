@@ -129,6 +129,26 @@ class RepositoryExtend
         return $model;
     }
 
+    protected function treatedLeftJoin($model, array $join)
+    {
+        try {
+            foreach ($join as $field => $value) {
+                if (!is_array($value)) {
+                    list($table, $left_val, $condition, $right_val) = $join;
+                    $model = $model->leftJoin($table, $left_val, $condition, $right_val);
+                    break;
+                } else {
+                    list($table, $left_val, $condition, $right_val) = $value;
+                    $model = $model->leftJoin($table, $left_val, $condition, $right_val);
+                }
+            }
+        } catch (\Exception $e) {
+            throw new ExtensionException("处理join时出错了，请检查参数！");
+        }
+
+        return $model;
+    }
+
     /**处理 $between
      * @param $model
      * @param array $between

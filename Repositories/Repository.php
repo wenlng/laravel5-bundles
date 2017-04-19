@@ -23,7 +23,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
     protected $app;
 
     /**操作的model
-     * @var
+     * @var Repository
      */
     protected $model;
 
@@ -184,13 +184,17 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
     /**通过条件查找一条
      * @param array $where
      * @param array $columns
+     * @param array $order_by
      * @return mixed
      */
-    public function findOneWhere(array $where, $columns = ['*'])
+    public function findOneWhere(array $where, $columns = ['*'], array $order_by = [])
     {
         //处理where
         $this->model = $this->treatedWhere($this->model, $where);
         $results = $this->model->first($columns);
+
+        //处理orderBy
+        $this->model = $this->treatedOrder($this->model, $order_by);
 
         $this->resetModel();
         return $results;
@@ -335,6 +339,53 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
         return $results;
     }
 
+    /**连接表查找数据多条数据
+     * @param array $where
+     * @param array $join
+     * @param $limit
+     * @param array $columns
+     * @param array $order_by
+     * @return mixed
+     */
+    public function findWhereLeftJoin(array $where, array $join, $limit = null, $columns = ['*'], array $order_by = [])
+    {
+        //处理where
+        $this->model = $this->treatedWhere($this->model, $where);
+
+        //处理join
+        $this->model = $this->treatedLeftJoin($this->model, $join);
+
+        //处理orderBy
+        $this->model = $this->treatedOrder($this->model, $order_by);
+
+        if ($limit == null)
+            $results = $this->model->get($columns);
+        else
+            $results = $this->model->take($limit)->get($columns);
+
+        $this->resetModel();
+        return $results;
+    }
+
+    /**连接表查找数据一条数据
+     * @param array $where
+     * @param array $join
+     * @param array $columns
+     * @return mixed
+     */
+    public function findOneWhereLeftJoin(array $where, array $join, $columns = ['*'])
+    {
+        //处理where
+        $this->model = $this->treatedWhere($this->model, $where);
+
+        //处理join
+        $this->model = $this->treatedLeftJoin($this->model, $join);
+
+        $results = $this->model->first($columns);
+        $this->resetModel();
+        return $results;
+    }
+
     /**通过一个字段统计总额
      * @param array $where
      * @param $field
@@ -382,7 +433,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
     /**在数据库中保存一个新的实体
      * @param array $attributes
      * @param bool $object
-     * @return mixed
+     * @return bool|mixed
      */
     public function create(array $attributes, $object = false)
     {
@@ -398,7 +449,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
     /**通过ID更新一个实体库
      * @param array $attributes
      * @param $id
-     * @return mixed
+     * @return bool
      */
     public function update(array $attributes, $id)
     {
@@ -414,7 +465,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
      * @param array $attributes
      * @param $field
      * @param $value
-     * @return mixed
+     * @return bool
      */
     public function updateByField(array $attributes, $field, $value)
     {
@@ -428,7 +479,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
 
     /**通过ID删除一个实体库
      * @param $id
-     * @return mixed
+     * @return bool
      */
     public function delete($id)
     {
@@ -439,7 +490,7 @@ abstract class Repository extends RepositoryExtend implements RepositoryInterfac
 
     /**通过条件删除一个实体库
      * @param array $where
-     * @return mixed
+     * @return bool
      */
     public function whereDelete(array $where = [])
     {

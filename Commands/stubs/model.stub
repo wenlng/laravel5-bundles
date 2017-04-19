@@ -8,4 +8,7 @@ class %MODEL_NAME% extends Model
 {
     protected $table = "%MODEL_LOWER_NAME%";
     protected $primaryKey = '%MODEL_LOWER_ID%';
+
+    //protected $guarded=[];
+    //public $timestamps = false;
 }
