@@ -134,7 +134,10 @@ abstract class Service extends ToolExtend implements ServiceInterface
     public function makeMain($reset = false){
         $mainClass = null;
         foreach($this->class_files as $key => $item){
-            if(isset($item['main']) && $item['main']) $mainClass = $key;
+            if(isset($item['main']) && $item['main']){
+				$mainClass = $key;
+				break;
+			} 
         }
 
         if(!is_null($mainClass)) {

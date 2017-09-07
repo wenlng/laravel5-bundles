@@ -157,7 +157,7 @@ abstract class Kernel extends ToolExtend implements KernelInterface
      * @throws BundleNotFoundException
      * @throws ServiceNotFoundException
      */
-    public function getService($name, $reset)
+    public function getService($name, $reset = false)
     {
         $separate = explode('.', $name);
 

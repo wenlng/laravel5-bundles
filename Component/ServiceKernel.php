@@ -13,6 +13,7 @@ use Awen\Bundles\Contracts\ServiceKernelInterface;
 use Awen\Bundles\Exceptions\BundleException;
 use Illuminate\Config\Repository;
 use Illuminate\Foundation\Application;
+use Illuminate\View\View;
 
 abstract class ServiceKernel implements ServiceKernelInterface
 {
@@ -101,7 +102,11 @@ abstract class ServiceKernel implements ServiceKernelInterface
 
         if(!is_null($this->app_kernel)){
             $result = $this->app_kernel->call($controllerNamespace, $param);
-            return $result->render();
+            if($result instanceof View){
+                return $result->render();
+            }else{
+                return $result;
+            }
         }
 
         return null;
