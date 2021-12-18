@@ -1,15 +1,13 @@
-Laravel 5 Bundles
+Laravel5 Bundles
 ==============
 
-### Bundles 是一个把应用包系统，从2.0.0版本开始...
+### Laravel Bundles 是一个多应用分离的包系统
 
-使用这个Bundles系统可以抛弃自带的APP目录了，使用全新的开发目录结构/，使开发变目录分离得更简单、使用应用强内聚、松耦合
+在 Laravel 中使用 Bundles 系统可以使用全新的开发目录结构，让应用开发分离变得更简单、使得应用强内聚、松耦合
 
 
-## 安装 Installation
-使用composer安装，把下面代码加入你的composer.json文件里：
-
-To install through composer, simply put the following in your composer.json file:
+## 安装
+使用composer依赖管理工具安装，将以下代码加入你项目composer.json文件中：
 
 ```json
 {
@@ -19,9 +17,7 @@ To install through composer, simply put the following in your composer.json file
 }
 ```
 
-然后运行 `composer install` 获取包
-
-And then run `composer install` to fetch the package.
+执行安装 `composer install`
 
 或者 or
 ```
@@ -29,31 +25,26 @@ composer require "awen/bundles:~2.1.0"
 ```
 
 
-## 添加服务提供者 Add Service Provider
-下一步添加以下服务提供者到 `config/app.php` 文件里
-
-Next add the following service provider in `config/app.php`.
-
+## 添加服务提供者
+1.添加以下服务提供者到项目的 `config/app.php` 文件中
 ```php
 'providers' => [
   Awen\Bundles\BundlesServiceProvider::class,
 ],
 ```
 
-如何出现命名空间不存在，执行一下： `composer dump-autoload`
+如果出现命名空间不存在，执行处理：
+ ```
+ composer dump-autoload
+ ```
 
-下一步刷新运行包的配置文件
-
-Next publish the package's configuration file by run :
-
+2.刷新运行包的配置文件
 ```
 php artisan vendor:publish --tag=bundle
 ```
 
-## 配置自动加载  Autoloading
-默认的 控制器，实体或库 没有自动加载，你可以用 `psr-4` 加载需要的东西。例如:
-
-By default controllers, entities or repositories not loaded automatically. You can autoload all that stuff using `psr-4`. For example :
+## 配置自动加载
+默认的"控制器、实体或库"没有自动加载，可以用 `psr-4` 加载需要的文件。例如:
 
 ```json
 {
@@ -64,7 +55,6 @@ By default controllers, entities or repositories not loaded automatically. You c
   }
 }
 ```
-
 
 ## < Bundles开发目录结构 >
 ```
@@ -108,11 +98,7 @@ bundles
 ```
 
 
-## 下载完成后开始使用  After the download is complete
-
-- [详细使用教程 (Detailed tutorial)  Url : http://www.lwgblog.com](http://www.lwgblog.com)，正在录制路上
-- laravel技术交流群：178498936
-- 作者联系QQ：871024608
+## 下载完成后开始使用
 
 ### 一、简单注册Bundle：
 1.创建一个前端(Home)的Bundle
@@ -168,17 +154,17 @@ class IndexController extends Controller{
   }
 
   public function index(){
-	//------------第一种-----------------
+	//------------第一种方式-----------------
     //获取服务形式下面详情讲
     $tool_service = $this->service->getService('home:tool');
     //执行服务里的类方法
     $tool_service->execute('pay.show');
 
-	//------------第二种-----------------
+	//------------第二种方式-----------------
 	$payService = $this->service->getService('home:tool.pay');
 	$payService->show();
 
-	//------------第三种-----------------
+	//------------第三种方式-----------------
 	//在ToolService.php的registerClassFiles()里的‘pay’服务添加一个 ‘main’=>true ;表示默认入口才会返回pay服务类，不配填写main默认返回service主服务类
 	$payService = $this->service->getService('home:tool');
 	$payService->show();
@@ -694,3 +680,6 @@ php artisan bundle:migrate-refresh -b=<BundleName>
 ```
 php artisan bundle:migrate-refresh -b=<BundleName> --database --force --seed
 ```
+
+## LICENSE
+    MIT

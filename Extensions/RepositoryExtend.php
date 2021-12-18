@@ -2,7 +2,7 @@
 
 /**
  * Author: liangwengao
- * Email: 871024608@qq.com
+ * Email: wengaolng@gmail.com
  * Date: 2016-01-26
  * Time: 18:25
  */

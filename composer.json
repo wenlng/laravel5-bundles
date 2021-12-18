@@ -14,12 +14,12 @@
     "authors": [
         {
             "name": "Liang WenGao",
-            "email": "871024608@qq.com"
+            "email": "wengaolng@gmail.com"
         }
     ],
     "require": {
         "php": ">=5.4.0",
-        "laravel/framework": "5.1.*|5.2.*|5.3.*"
+        "laravel/framework": ">=5.0"
     },
     "require-dev": {
 
